@@ -1,6 +1,6 @@
 import BN from 'bn.js';
 import Long from 'long';
-import { isBech32, isByteString } from 'lib/utils/address/hex';
+import { isBech32, isByteString } from './hex';
 
 export const Validator = {
   isAddress(x: unknown) {

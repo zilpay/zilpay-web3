@@ -7,8 +7,8 @@
  * Copyright (c) 2021 ZilPay
  */
 import { Validator } from './validator';
-import { toChecksumAddress, tohexString } from 'lib/utils/address/hex';
-import { fromBech32Address, toBech32Address } from 'lib/utils/bech32';
+import { toChecksumAddress, tohexString } from './hex';
+import { fromBech32Address, toBech32Address } from './bech32';
 
 export const CryptoUtils = {
   isValidChecksumAddress(address: string) {
