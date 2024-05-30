@@ -1,4 +1,4 @@
-import type { ReqBody } from "lib/streem/message";
+import type { ReqBody } from "types";
 
 type Listener = (...args: ReqBody[]) => void;
 

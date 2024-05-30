@@ -1,10 +1,10 @@
-import type { TabStream } from 'lib/streem/tab-stream';
-import type { Params } from 'types/zilliqa';
-import type { Subject } from 'lib/streem/subject';
+import type { TabStream } from './stream/tab-stream';
+import type { Params } from 'types';
+import type { Subject } from './stream/subject';
 
 import { uuidv4 } from 'lib/crypto/uuid';
-import { MTypeTab, MTypeTabContent } from 'lib/streem/stream-keys';
-import { ContentMessage } from 'lib/streem/secure-message';
+import { MTypeTab, MTypeTabContent } from './stream/stream-keys';
+import { ContentMessage } from './stream/secure-message';
 import { RPCMethod } from 'config/methods';
 import { ErrorMessages } from 'config/errors';
 
@@ -20,10 +20,10 @@ export class HTTPProvider {
   public RPCMethod = RPCMethod;
   public middleware = {
     request: {
-      use() {}
+      use() { }
     },
     response: {
-      use() {}
+      use() { }
     }
   };
 
@@ -36,7 +36,7 @@ export class HTTPProvider {
     const type = MTypeTab.CONTENT_PROXY_MEHTOD;
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
-    let sub = null;
+    let sub: () => void;
 
     // Send to content.js
     new ContentMessage({
@@ -64,7 +64,7 @@ export class HTTPProvider {
         return resolve(msg.payload.resolve);
       });
     });
-    const timeout = new Promise((_, reject) =>{
+    const timeout = new Promise((_, reject) => {
       setTimeout(() => {
         if (sub) sub();
         reject(new Error(`${method} ${ErrorMessages.TimeOut}`));

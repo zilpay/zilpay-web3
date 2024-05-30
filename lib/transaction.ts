@@ -1,4 +1,4 @@
-import type { DataParams, TransactionParams, TransitionReceipt } from 'types/transaction';
+import type { DataParams, TransactionParams, TransitionReceipt } from 'types';
 import type { HTTPProvider } from './provider';
 import type { Wallet } from './wallet';
 
@@ -7,7 +7,7 @@ import BN from 'bn.js';
 import Long from 'long';
 import { Validator, CryptoUtils } from './crypto';
 import { Gas } from 'config/gas';
-import { TypeOf } from 'lib/type/type-checker';
+import { TypeOf } from './type-checker';
 import { ErrorMessages } from 'config/errors';
 
 export class Transaction {

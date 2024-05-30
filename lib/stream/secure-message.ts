@@ -1,4 +1,4 @@
-import type { ReqBody } from './message';
+import type { ReqBody } from 'types';
 import type { TabStream } from './tab-stream';
 
 /**

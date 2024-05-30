@@ -1,4 +1,4 @@
-import type { ReqBody } from './message';
+import type { ReqBody } from 'types';
 
 import { MTypeTabContent } from './stream-keys';
 

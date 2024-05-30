@@ -1,20 +1,19 @@
-import type { TabStream } from "lib/streem/tab-stream";
-import type { MessageParams, TxParams } from "types/transaction";
-import type { InpageWallet } from "types/account";
-import type { Subject } from 'lib/streem/subject';
-import type { TxBlock } from 'types/block';
-import type { SignedMessage } from "types/zilliqa";
+import type { TabStream } from "./stream/tab-stream";
+import type { MessageParams, TxParams } from "types";
+import type { InpageWallet } from "types";
+import type { Subject } from './stream/subject';
+import type { TxBlock } from 'types';
+import type { SignedMessage } from "types";
+import type { InputCipherParams } from "types";
 
 import assert from 'assert';
-import { uuidv4 } from 'lib/crypto/uuid';
+import { uuidv4 } from './crypto/uuid';
 import { Transaction } from "./transaction";
-import { MTypeTab, MTypeTabContent } from "lib/streem/stream-keys";
-import { TypeOf } from "lib/type/type-checker";
-import { getFavicon } from "./favicon";
-import { ContentMessage } from "lib/streem/secure-message";
+import { MTypeTab, MTypeTabContent } from "./stream/stream-keys";
+import { TypeOf } from "./type-checker";
+import { ContentMessage } from "./stream/secure-message";
 import { CryptoUtils } from "./crypto";
 import { ErrorMessages } from "config/errors";
-import type { InputCipherParams } from "types/cipher";
 
 export class Wallet {
   #stream: TabStream;
@@ -22,7 +21,7 @@ export class Wallet {
 
   #isConnect = false;
   #isEnable = false;
-  #http: string | null;
+  #http: string | null = null;
   #net = 'mainnet';
   #defaultAccount: InpageWallet | null = null;
 
@@ -43,7 +42,7 @@ export class Wallet {
   public get defaultAccount() {
     return this.#defaultAccount;
   }
-  
+
   public get http() {
     return this.#http;
   }
@@ -64,7 +63,7 @@ export class Wallet {
           cb(this.#defaultAccount);
         }
         const obs = this.#subject.on((msg) => {
-          let account: InpageWallet;
+          let account: InpageWallet | null = null;
 
           switch (msg.type) {
             case MTypeTab.ADDRESS_CHANGED:
@@ -210,11 +209,9 @@ export class Wallet {
     const uuid = uuidv4();
     const title = window.document.title;
     const domain = window.document.domain;
-    const icon = getFavicon();
     const payload = {
       title,
       domain,
-      icon,
       uuid
     };
 
@@ -242,12 +239,8 @@ export class Wallet {
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const title = window.document.title;
-    const domain = window.document.domain;
-    const icon = getFavicon();
     const payload: InputCipherParams = {
       title,
-      domain,
-      icon,
       uuid,
       content
     };
@@ -278,12 +271,8 @@ export class Wallet {
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const title = window.document.title;
-    const domain = window.document.domain;
-    const icon = getFavicon();
     const payload: InputCipherParams = {
       title,
-      domain,
-      icon,
       uuid,
       content
     };
@@ -371,12 +360,10 @@ export class Wallet {
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const title = window.document.title;
-    const icon = getFavicon();
     const payload: MessageParams = {
       content: message,
       uuid,
       title,
-      icon
     };
 
     new ContentMessage({
@@ -409,7 +396,6 @@ export class Wallet {
       uuid,
       title: window.document.title,
       domain: window.location.origin,
-      icon: getFavicon(),
       nonce: undefined
     };
 

@@ -1,7 +1,7 @@
-import { MTypeTab, MTypeTabContent } from "lib/streem/stream-keys";
-import { TabStream } from "lib/streem/tab-stream";
-import { Subject } from 'lib/streem/subject';
-import { ContentMessage } from 'lib/streem/secure-message';
+import { MTypeTab, MTypeTabContent } from "./stream/stream-keys";
+import { TabStream } from "./stream/tab-stream";
+import { Subject } from './stream/subject';
+import { ContentMessage } from './stream/secure-message';
 
 export class Handler {
   public readonly stream = new TabStream(MTypeTabContent.INJECTED);

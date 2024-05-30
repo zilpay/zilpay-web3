@@ -1,11 +1,11 @@
-import type { TransactionParams, TxParams } from 'types/transaction';
+import type { TransactionParams, TxParams } from 'types';
 
 import { CryptoUtils } from './crypto';
 import assert from 'assert';
 import { ErrorMessages } from 'config/errors';
 import { Contracts } from 'config/contracts';
 import { TransactionFactory, Transaction } from './transaction';
-import { TypeOf } from 'lib/type/type-checker';
+import { TypeOf } from './type-checker';
 
 export class Contract {
   public transaction: TransactionFactory;
@@ -38,11 +38,11 @@ export class Contract {
 
     const { wallet } = this.transaction;
     let tx = this.transaction.new({
+      ...params,
       priority,
       toAddr: Contracts.ZERO_ADDRESS,
-      code: this.code,
+      code: this.code || '',
       data: JSON.stringify(this.init),
-      ...params
     });
     const result = await wallet.sign(tx);
 
@@ -63,10 +63,10 @@ export class Contract {
       params: args
     });
     const tx = this.transaction.new({
+      ...params,
       data,
       priority,
       toAddr: this.contractAddress,
-      ...params
     });
     const result = await wallet.sign(tx);
 
@@ -137,7 +137,7 @@ export class Contract {
     );
 
     if (TypeOf.isObject(result)) {
-      this.code = String(result['code']);
+      this.code = String((result as any)['code']);
     }
 
     if (error) {
