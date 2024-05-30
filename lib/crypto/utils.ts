@@ -7,14 +7,13 @@
  * Copyright (c) 2021 ZilPay
  */
 import { Validator } from './validator';
-import { toChecksumAddress, tohexString } from './hex';
+import { tohexString } from './hex';
 import { fromBech32Address, toBech32Address } from './bech32';
 
 export const CryptoUtils = {
   isValidChecksumAddress(address: string) {
     return (
-      Validator.isAddress(tohexString(address)) &&
-      toChecksumAddress(address)
+      Validator.isAddress(tohexString(address)) && address
     );
   },
   fromBech32Address(address: string) {
@@ -35,7 +34,7 @@ export const CryptoUtils = {
       return this.fromBech32Address(addr);
     }
     if (Validator.isAddress(addr)) {
-      return toChecksumAddress(addr);
+      return addr;
     }
 
     throw Error(
@@ -47,7 +46,7 @@ export const CryptoUtils = {
       addr = this.fromBech32Address(addr);
     }
 
-    return toChecksumAddress(addr);
+    return addr;
   }
 };
 

@@ -7,7 +7,7 @@
  * Copyright (c) 2021 ZilPay
  */
 import { Buffer } from 'buffer';
-import { isAddress, toChecksumAddress, tohexString } from "./hex";
+import { isAddress, tohexString } from "./hex";
 
 const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 const HRP = 'zil';
@@ -192,5 +192,5 @@ export const fromBech32Address = (address: string): string => {
   if (!buf) {
     throw new Error("CannotConvertBytes");
   }
-  return toChecksumAddress(buf.toString('hex'));
+  return buf.toString('hex');
 };
