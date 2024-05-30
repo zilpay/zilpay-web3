@@ -8,3 +8,4 @@ export function init() {
     console.warn('use inject');
   }
 }
+
