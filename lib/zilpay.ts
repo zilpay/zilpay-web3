@@ -1,5 +1,5 @@
-import type { TabStream } from './streem/tab-stream';
-import type { Subject } from './streem/subject';
+import type { TabStream } from './stream/tab-stream';
+import type { Subject } from './stream/subject';
 
 import { ZilliqaUtils } from './crypto/zilliqa-utils';
 import { HTTPProvider } from './provider';

@@ -8,7 +8,7 @@ const { document } = globalThis;
 /**
  * Used for communication between a web page and an extension's content script.
  */
- export class TabStream {
+export class TabStream {
 
   readonly #eventName: string;
 
@@ -25,7 +25,7 @@ const { document } = globalThis;
    */
   public listen(cb: (payload: ReqBody) => void) {
     document.addEventListener(this.#eventName, (event) => {
-      const detail = event['detail'];
+      const detail = (event as any)['detail'];
 
       if (detail) {
         cb(JSON.parse(detail));
@@ -64,7 +64,7 @@ const { document } = globalThis;
  * @param encryptedData - No modifly data
  * @param to - Event name.
  */
- #getEvent(detail: string, to: string) {
+  #getEvent(detail: string, to: string) {
     return new CustomEvent(to, this.#getEventInit(detail));
   }
 }

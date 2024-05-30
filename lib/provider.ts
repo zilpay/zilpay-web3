@@ -48,7 +48,7 @@ export class HTTPProvider {
       }
     }).send(this.#stream, recipient);
 
-    const fulfilled = new Promise((resolve, reject) => {
+    const fulfilled: Promise<Response> = new Promise((resolve, reject) => {
       sub = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.CONTENT_PROXY_RESULT) return;
         if (!msg.payload || !msg.payload.uuid) return;
@@ -61,7 +61,7 @@ export class HTTPProvider {
 
         delete msg.payload.uuid;
         sub();
-        return resolve(msg.payload.resolve);
+        return resolve(msg.payload.resolve as Response);
       });
     });
     const timeout = new Promise((_, reject) => {
@@ -71,6 +71,6 @@ export class HTTPProvider {
       }, 5000);
     });
 
-    return Promise.race([fulfilled, timeout]);
+    return Promise.race([fulfilled, timeout]) as Promise<Response>;
   }
 }
