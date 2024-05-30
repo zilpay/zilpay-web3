@@ -54,7 +54,7 @@
   "files": [
     "dist/*",
     "config/*",
-    "packages/*",
+    "lib/*",
     "types/*",
     "index.js",
     "index.ts"
