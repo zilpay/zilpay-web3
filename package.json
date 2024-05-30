@@ -1,0 +1,60 @@
+{
+  "name": "@hicaru/zilpay-web3",
+  "version": "0.0.1",
+  "repository": "git@github.com:zilpay/zilpay-web3.git",
+  "author": "Rinat <lich666black@gmail.com>",
+  "type": "module",
+  "license": "MIT",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.js",
+  "main": "index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "serve": "http-server ./"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/bun": "latest",
+    "http-server": "^14.1.1",
+    "rollup": "^4.18.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "browser": {
+    "crypto": false
+  },
+  "keywords": [
+    "zilliqa",
+    "web3",
+    "zilpay",
+    "blockchain",
+    "bitcoin",
+    "bytes",
+    "cryptography"
+  ],
+  "files": [
+    "dist/*",
+    "config/*",
+    "packages/*",
+    "types/*",
+    "index.js",
+    "index.ts"
+  ]
+}
