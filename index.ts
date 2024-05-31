@@ -1,6 +1,6 @@
 import { handler, zilPay } from './lib';
 
-export function init() {
+export function initZilPayWeb3() {
   if (!globalThis.window || !globalThis.document) {
     console.warn('is not enablde in node');
     return;
