@@ -14,6 +14,7 @@ import { TypeOf } from "./type-checker";
 import { ContentMessage } from "./stream/secure-message";
 import { CryptoUtils } from "./crypto";
 import { ErrorMessages } from "config/errors";
+import { getFavicon } from "./favicon";
 
 export class Wallet {
   #stream: TabStream;
@@ -210,12 +211,12 @@ export class Wallet {
     const type = MTypeTab.CONNECT_APP;
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
+    const icon = getFavicon();
     const title = window.document.title;
-    const domain = window.document.domain;
     const payload = {
       title,
-      domain,
-      uuid
+      uuid,
+      icon
     };
 
     new ContentMessage({
@@ -242,9 +243,11 @@ export class Wallet {
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const title = window.document.title;
+    const icon = getFavicon();
     const payload: InputCipherParams = {
       title,
       uuid,
+      icon,
       content
     };
 
@@ -273,10 +276,12 @@ export class Wallet {
     const type = MTypeTab.ADD_DECRYPTION;
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
+    const icon = getFavicon();
     const title = window.document.title;
     const payload: InputCipherParams = {
       title,
       uuid,
+      icon,
       content
     };
 
@@ -304,11 +309,11 @@ export class Wallet {
   public async disconnect() {
     const type = MTypeTab.DISCONNECT_APP;
     const recipient = MTypeTabContent.CONTENT;
-    const domain = window.document.domain;
+    const icon = getFavicon();
     const uuid = uuidv4();
     const payload = {
       uuid,
-      domain
+      icon
     };
 
     new ContentMessage({
@@ -362,11 +367,13 @@ export class Wallet {
     const type = MTypeTab.SIGN_MESSAGE;
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
+    const icon = getFavicon();
     const title = window.document.title;
     const payload: MessageParams = {
       content: message,
       uuid,
       title,
+      icon
     };
 
     new ContentMessage({
@@ -394,11 +401,12 @@ export class Wallet {
     const type = MTypeTab.CALL_TO_SIGN_TX;
     const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
+    const icon = getFavicon();
     const payload = {
       ...tx.payload,
       uuid,
+      icon,
       title: window.document.title,
-      domain: window.location.origin,
       nonce: undefined
     };
 
