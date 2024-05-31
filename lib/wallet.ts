@@ -6,7 +6,7 @@ import type { TxBlock } from 'types';
 import type { SignedMessage } from "types";
 import type { InputCipherParams } from "types";
 
-import assert from 'assert';
+import assert from './assert';
 import { uuidv4 } from './crypto/uuid';
 import { Transaction } from "./transaction";
 import { MTypeTab, MTypeTabContent } from "./stream/stream-keys";

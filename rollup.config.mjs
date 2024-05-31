@@ -10,12 +10,13 @@ export default [
 		output: {
 			dir: 'dist',
 			name: 'web3',
-			format: !production ? 'es' : 'umd',
+			format: production ? 'es' : 'umd',
 			sourcemap: true
 		},
 		plugins: [
 			resolve({
-				brower: true
+				brower: true,
+				preferBuiltins: false,
 			}),
 			typescript({
 				sourceMap: true,

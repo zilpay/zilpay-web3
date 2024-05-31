@@ -2,7 +2,7 @@ import type { DataParams, TransactionParams, TransitionReceipt } from 'types';
 import type { HTTPProvider } from './provider';
 import type { Wallet } from './wallet';
 
-import assert from 'assert';
+import assert from './assert';
 import BN from 'bn.js';
 import Long from 'long';
 import { Validator, CryptoUtils } from './crypto';

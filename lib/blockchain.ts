@@ -2,7 +2,7 @@ import type { HTTPProvider } from "./provider";
 import type { Wallet } from './wallet';
 import type { TransactionParams, TxParams } from "types";
 
-import assert from 'assert';
+import assert from './assert';
 import { Transaction } from './transaction';
 import { CryptoUtils } from "./crypto";
 import { RPCMethod } from 'config/methods';

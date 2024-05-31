@@ -1,7 +1,7 @@
 import type { TransactionParams, TxParams } from 'types';
 
 import { CryptoUtils } from './crypto';
-import assert from 'assert';
+import assert from './assert';
 import { ErrorMessages } from 'config/errors';
 import { Contracts } from 'config/contracts';
 import { TransactionFactory, Transaction } from './transaction';
