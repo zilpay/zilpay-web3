@@ -6,20 +6,14 @@ ZilPay Web3.js is a JavaScript library that provides a convenient way to interac
 
 To use ZilPay Web3.js in your project, you can include it via a script tag or install it using npm.
 
-### Script Tag
-
-Include the following script tag in your HTML file:
-
-```html
-<script src="path/to/zilpay-web3.js"></script>
-```
-
 ### npm
 
 Install the package using npm:
 
 ```bash
-npm install zilpay-web3
+npm install @zilpay/zilpay-web3
+yarn add @zilpay/zilpay-web3
+bun add @zilpay/zilpay-web3
 ```
 
 Then, you can import the library in your JavaScript file:
