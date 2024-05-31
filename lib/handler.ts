@@ -8,9 +8,11 @@ export class Handler {
   public readonly subject = new Subject();
 
   constructor() {
-    this.stream.listen((msg) => {
-      this.subject.emit(msg);
-    });
+    if (globalThis.window || globalThis.document) {
+      this.stream.listen((msg) => {
+        this.subject.emit(msg);
+      });
+    }
   }
 
   public initialized() {

@@ -50,7 +50,10 @@ export class Wallet {
   constructor(stream: TabStream, subject: Subject) {
     this.#stream = stream;
     this.#subject = subject;
-    this.#subscribe();
+
+    if (globalThis.window || globalThis.document) {
+      this.#subscribe();
+    }
   }
 
   public observableAccount() {
