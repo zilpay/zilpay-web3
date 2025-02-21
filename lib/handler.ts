@@ -1,14 +1,14 @@
-import { MTypeTab, MTypeTabContent } from "./stream/stream-keys";
-import { TabStream } from "./stream/tab-stream";
+import { MTypeTab } from './stream/stream-keys';
 import { Subject } from './stream/subject';
 import { ContentMessage } from './stream/secure-message';
+import { FlutterStream } from './stream';
 
 export class Handler {
-  public readonly stream = new TabStream(MTypeTabContent.INJECTED);
+  public readonly stream = new FlutterStream();
   public readonly subject = new Subject();
 
   constructor() {
-    if (globalThis.window || globalThis.document) {
+    if (globalThis.window) {
       this.stream.listen((msg) => {
         this.subject.emit(msg);
       });
@@ -17,11 +17,10 @@ export class Handler {
 
   public initialized() {
     const type = MTypeTab.GET_WALLET_DATA;
-    const recipient = MTypeTabContent.CONTENT;
 
     new ContentMessage({
       type,
       payload: {}
-    }).send(this.stream, recipient);
+    }).send(this.stream);
   }
 }

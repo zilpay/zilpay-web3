@@ -1,4 +1,3 @@
-import type { TabStream } from "./stream/tab-stream";
 import type { MessageParams, TxParams } from "types";
 import type { InpageWallet } from "types";
 import type { Subject } from './stream/subject';
@@ -9,15 +8,16 @@ import type { InputCipherParams } from "types";
 import assert from './assert';
 import { uuidv4 } from './crypto/uuid';
 import { Transaction } from "./transaction";
-import { MTypeTab, MTypeTabContent } from "./stream/stream-keys";
+import { MTypeTab } from "./stream/stream-keys";
 import { TypeOf } from "./type-checker";
 import { ContentMessage } from "./stream/secure-message";
 import { CryptoUtils } from "./crypto";
 import { ErrorMessages } from "config/errors";
 import { getFavicon } from "./favicon";
+import { FlutterStream } from "./stream";
 
 export class Wallet {
-  #stream: TabStream;
+  #stream: FlutterStream;
   #subject: Subject;
 
   #isConnect = false;
@@ -48,7 +48,7 @@ export class Wallet {
     return this.#http;
   }
 
-  constructor(stream: TabStream, subject: Subject) {
+  constructor(stream: FlutterStream, subject: Subject) {
     this.#stream = stream;
     this.#subject = subject;
 
@@ -209,7 +209,6 @@ export class Wallet {
 
   public async connect(): Promise<boolean> {
     const type = MTypeTab.CONNECT_APP;
-    const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const icon = getFavicon();
     const title = window.document.title;
@@ -222,7 +221,7 @@ export class Wallet {
     new ContentMessage({
       type,
       payload
-    }).send(this.#stream, recipient);
+    }).send(this.#stream);
 
     return new Promise((resolve) => {
       const obs = this.#subject.on((msg) => {
@@ -240,7 +239,6 @@ export class Wallet {
 
   public async encrypt(content: string): Promise<object> {
     const type = MTypeTab.ADD_ENCRYPTION;
-    const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const title = window.document.title;
     const icon = getFavicon();
@@ -254,7 +252,7 @@ export class Wallet {
     new ContentMessage({
       type,
       payload
-    }).send(this.#stream, recipient);
+    }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
       const obs = this.#subject.on((msg) => {
@@ -274,7 +272,6 @@ export class Wallet {
 
   public async decrypt(content: string): Promise<object> {
     const type = MTypeTab.ADD_DECRYPTION;
-    const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const icon = getFavicon();
     const title = window.document.title;
@@ -288,7 +285,7 @@ export class Wallet {
     new ContentMessage({
       type,
       payload
-    }).send(this.#stream, recipient);
+    }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
       const obs = this.#subject.on((msg) => {
@@ -308,7 +305,6 @@ export class Wallet {
 
   public async disconnect() {
     const type = MTypeTab.DISCONNECT_APP;
-    const recipient = MTypeTabContent.CONTENT;
     const icon = getFavicon();
     const uuid = uuidv4();
     const payload = {
@@ -319,7 +315,7 @@ export class Wallet {
     new ContentMessage({
       type,
       payload
-    }).send(this.#stream, recipient);
+    }).send(this.#stream);
 
     return new Promise((resolve) => {
       const obs = this.#subject.on((msg) => {
@@ -365,7 +361,6 @@ export class Wallet {
 
   #signMessage(message: string): Promise<SignedMessage> {
     const type = MTypeTab.SIGN_MESSAGE;
-    const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const icon = getFavicon();
     const title = window.document.title;
@@ -379,7 +374,7 @@ export class Wallet {
     new ContentMessage({
       type,
       payload
-    }).send(this.#stream, recipient);
+    }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
       const obs = this.#subject.on((msg) => {
@@ -399,7 +394,6 @@ export class Wallet {
 
   #signTransaction(tx: Transaction): Promise<TxParams> {
     const type = MTypeTab.CALL_TO_SIGN_TX;
-    const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     const icon = getFavicon();
     const payload = {
@@ -414,7 +408,7 @@ export class Wallet {
     new ContentMessage({
       type,
       payload
-    }).send(this.#stream, recipient);
+    }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
       const obs = this.#subject.on((msg) => {

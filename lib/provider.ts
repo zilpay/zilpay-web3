@@ -1,12 +1,12 @@
-import type { TabStream } from './stream/tab-stream';
 import type { Params } from 'types';
 import type { Subject } from './stream/subject';
 
 import { uuidv4 } from 'lib/crypto/uuid';
-import { MTypeTab, MTypeTabContent } from './stream/stream-keys';
+import { MTypeTab } from './stream/stream-keys';
 import { ContentMessage } from './stream/secure-message';
 import { RPCMethod } from 'config/methods';
 import { ErrorMessages } from 'config/errors';
+import { FlutterStream } from './stream';
 
 export type Response = {
   error?: unknown,
@@ -14,7 +14,7 @@ export type Response = {
 }
 
 export class HTTPProvider {
-  #stream: TabStream;
+  #stream: FlutterStream;
   #subject: Subject;
 
   public RPCMethod = RPCMethod;
@@ -27,14 +27,13 @@ export class HTTPProvider {
     }
   };
 
-  constructor(stream: TabStream, subject: Subject) {
+  constructor(stream: FlutterStream, subject: Subject) {
     this.#stream = stream;
     this.#subject = subject;
   }
 
   public send(method: string, ...params: Params): Promise<Response> {
     const type = MTypeTab.CONTENT_PROXY_MEHTOD;
-    const recipient = MTypeTabContent.CONTENT;
     const uuid = uuidv4();
     let sub: () => void;
 
@@ -46,7 +45,7 @@ export class HTTPProvider {
         method,
         uuid
       }
-    }).send(this.#stream, recipient);
+    }).send(this.#stream);
 
     const fulfilled: Promise<Response> = new Promise((resolve, reject) => {
       sub = this.#subject.on((msg) => {

@@ -1,70 +1,30 @@
-import type { ReqBody } from 'types';
+import { ReqBody } from "types";
 
-import { MTypeTabContent } from './stream-keys';
-
-
-const { document } = globalThis;
-
-/**
- * Used for communication between a web page and an extension's content script.
- */
-export class TabStream {
-
-  readonly #eventName: string;
-
-  /**
-   * Creates a new TabStream.
-   * @param {String} eventName - Event type.
-   */
-  constructor(eventName: string) {
-    this.#eventName = eventName
+export class FlutterStream {
+  constructor() {
+    this.#setupListener();
   }
 
-  /**
-   * Message listener that returns decrypted messages when synced
-   */
   public listen(cb: (payload: ReqBody) => void) {
-    document.addEventListener(this.#eventName, (event) => {
-      const detail = (event as any)['detail'];
-
-      if (detail) {
-        cb(JSON.parse(detail));
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (data) {
+        cb(data);
       }
     });
   }
 
-  /**
-   * Message sender which encrypts messages and adds the sender.
-   * @param data - The payload to send.
-   * @param to - The stream to send messages to.
-   */
-  public send(data: ReqBody, to: string) {
-    data.from = this.#eventName;
+  public send(data: ReqBody) {
+    (window as any).FlutterWebView?.postMessage(JSON.stringify(data));
+  }
 
-    if (Object.values(MTypeTabContent).includes(to)) {
-      this.#dispatch(JSON.stringify(data), to);
+  #setupListener() {
+    if (!(window as any).FlutterWebView) {
+      (window as any).FlutterWebView = {
+        postMessage: (msg: string) => {
+          window.postMessage(JSON.parse(msg), '*');
+        }
+      };
     }
-  }
-
-  #dispatch(data: string, to: string) {
-    document.dispatchEvent(this.#getEvent(data, to));
-  }
-
-  /**
-   * Helper methods for building and sending events.
-   */
-  #getEventInit(detail: string) {
-    return {
-      detail
-    };
-  }
-
-  /**
- * No modifly data
- * @param encryptedData - No modifly data
- * @param to - Event name.
- */
-  #getEvent(detail: string, to: string) {
-    return new CustomEvent(to, this.#getEventInit(detail));
   }
 }

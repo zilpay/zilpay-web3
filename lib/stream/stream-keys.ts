@@ -1,10 +1,5 @@
 const app = 'zil-pay';
 
-export const MTypeTabContent = {
-  CONTENT: `@/${app}/content-script`,
-  INJECTED: `@/${app}/injected-script`
-};
-
 export const MTypeTab = {
   GET_WALLET_DATA: `@/${app}/injected-get-wallet-data`,
   ADDRESS_CHANGED: `@/${app}/address-changed`,

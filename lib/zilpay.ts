@@ -1,13 +1,11 @@
-import type { TabStream } from './stream/tab-stream';
-import type { Subject } from './stream/subject';
-
-import { ZilliqaUtils } from './crypto/zilliqa-utils';
-import { HTTPProvider } from './provider';
-import { CryptoUtils } from './crypto/utils';
 import { Blockchain } from './blockchain';
-import { Wallet } from './wallet';
-import { TransactionFactory } from './transaction';
 import { ContractControl } from './contract';
+import { CryptoUtils, ZilliqaUtils } from './crypto';
+import { HTTPProvider } from './provider';
+import { FlutterStream } from './stream';
+import { Subject } from './stream/subject';
+import { TransactionFactory } from './transaction';
+import { Wallet } from './wallet';
 
 export class ZilPay {
   public utils = ZilliqaUtils;
@@ -19,7 +17,7 @@ export class ZilPay {
   public transactions: TransactionFactory;
   public contracts: ContractControl;
 
-  constructor(stream: TabStream, subject: Subject) {
+  constructor(stream: FlutterStream, subject: Subject) {
     this.provider = new HTTPProvider(stream, subject);
     this.wallet = new Wallet(stream, subject);
 

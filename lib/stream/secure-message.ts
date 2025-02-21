@@ -1,10 +1,7 @@
-import type { ReqBody } from 'types';
-import type { TabStream } from './tab-stream';
+import { ReqBody } from "types";
+import { FlutterStream } from "./tab-stream";
 
-/**
- * Can send encrypted msg.
- */
- export class ContentMessage {
+export class ContentMessage {
   private readonly _body: ReqBody;
 
   public get type() {
@@ -19,14 +16,9 @@ import type { TabStream } from './tab-stream';
     this._body = msg;
   }
 
-  /**
-   * Method for send message.
-   */
-  public send(stream: TabStream, recipient: string) {
-    const seralized = JSON.stringify(this._body);
-    const deserialized = JSON.parse(seralized);
-
-    stream.send(deserialized, recipient);
+  public send(stream: FlutterStream) {
+    const serialized = JSON.stringify(this._body);
+    const deserialized = JSON.parse(serialized);
+    stream.send(deserialized );
   }
-
 }
