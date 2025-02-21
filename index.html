@@ -2,12 +2,135 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link rel="icon" type="image/x-icon" href="./favicon.ico">
-  <script src="./dist//index.js"></script>
+  <title>ZilPay Web3 Debugging</title>
+  <link rel="icon" type="image/png" href="https://www.google.com/favicon.ico">
 </head>
 <body>
+  <h1>ZilPay Web3 Simulator</h1>
+  <button onclick="connectWallet()">Connect Wallet</button>
+  <button onclick="signMessage()">Sign Message</button>
+  <button onclick="signTransaction()">Sign Transaction</button>
+  <pre id="output"></pre>
+  <script src="./dist/inpage.js"></script>
+  <script>
+    const zilPay = window.zilPay;
+    const output = document.getElementById('output');
+    if (!zilPay) {
+      output.textContent = 'Error: zilPay is not initialized!';
+    } else {
+      output.textContent = 'zilPay is initialized successfully.\n';
+    }
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      console.log('Received from ZilPay:', msg);
+      switch (msg.type) {
+        case '@zil-pay/injected-get-wallet-data':
+          sendResponse({
+            type: '@zil-pay/injected-get-wallet-data',
+            payload: {
+              account: { base16: '0x1234567890abcdef1234567890abcdef12345678', bech32: 'zil1z5l...test' },
+              http: 'https://api.zilliqa.com',
+              netwrok: 'mainnet',
+              isConnect: false,
+              isEnable: true
+            }
+          });
+          break;
+        case '@zil-pay/request-to-connect-dapp':
+          sendResponse({
+            type: '@zil-pay/response-dapp-connect',
+            payload: {
+              uuid: msg.payload.uuid,
+              account: { base16: '0x1234567890abcdef1234567890abcdef12345678', bech32: 'zil1z5l...test' },
+              isConnect: true
+            }
+          });
+          break;
+        case '@zil-pay/request-to-sign-message':
+          sendResponse({
+            type: '@zil-pay/response-sign-message',
+            payload: {
+              uuid: msg.payload.uuid,
+              resolve: {
+                message: msg.payload.content,
+                publicKey: '0xpublickey123',
+                signature: '0xsignature123'
+              }
+            }
+          });
+          break;
+        case '@zil-pay/request-to-sign-tx':
+          sendResponse({
+            type: '@zil-pay/response-tx-result',
+            payload: {
+              uuid: msg.payload.uuid,
+              resolve: {
+                amount: '1000000',
+                code: '',
+                data: '',
+                gasLimit: '50',
+                gasPrice: '2000',
+                nonce: 1,
+                priority: false,
+                pubKey: '0xpublickey123',
+                signature: '0xsignature456',
+                toAddr: '0x0000000000000000000000000000000000000000'
+              }
+            }
+          });
+          break;
+        case '@zil-pay/request-through-content':
+          sendResponse({
+            type: '@zil-pay/response-from-content',
+            payload: {
+              uuid: msg.payload.uuid,
+              resolve: { result: '1' }
+            }
+          });
+          break;
+        default:
+          console.warn('Unhandled message type:', msg.type);
+      }
+    });
+    function sendResponse(response) {
+      console.log('Sending response:', response);
+      window.postMessage(response, '*');
+    }
+    function connectWallet() {
+      zilPay.wallet.connect()
+        .then((connected) => {
+          output.textContent = `Connected: ${connected}\nAccount: ${JSON.stringify(zilPay.wallet.defaultAccount, null, 2)}`;
+        })
+        .catch((err) => {
+          output.textContent = `Error: ${err.message}`;
+        });
+    }
+    function signMessage() {
+      zilPay.wallet.sign('Hello, Zilliqa!')
+        .then((signed) => {
+          output.textContent = `Signed Message: ${JSON.stringify(signed, null, 2)}`;
+        })
+        .catch((err) => {
+          output.textContent = `Error: ${err.message}`;
+        });
+    }
+    function signTransaction() {
+      const tx = zilPay.transactions.new({
+        toAddr: 'zil1z5l...test',
+        amount: '1000000',
+        gasPrice: '2000',
+        gasLimit: '50',
+        nonce: 1,
+        pubKey: '0xpublickey123'
+      });
+      zilPay.wallet.sign(tx)
+        .then((signedTx) => {
+          output.textContent = `Signed Transaction: ${JSON.stringify(signedTx, null, 2)}`;
+        })
+        .catch((err) => {
+          output.textContent = `Error: ${err.message}`;
+        });
+    }
+  </script>
 </body>
 </html>

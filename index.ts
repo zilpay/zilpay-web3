@@ -16,3 +16,5 @@ export function initZilPayWeb3() {
 
 export * from './lib';
 
+
+initZilPayWeb3();
