@@ -1,0 +1,2710 @@
+Project Path: zilpay-web3
+
+Source Tree:
+
+```
+zilpay-web3
+├── types
+│   └── index.ts
+├── rollup.config.mjs
+├── index.html
+├── bun.lockb
+├── config
+│   ├── errors.ts
+│   ├── contracts.ts
+│   ├── methods.ts
+│   ├── index.ts
+│   └── gas.ts
+├── README.md
+├── package.json
+├── lib
+│   ├── wallet.ts
+│   ├── crypto
+│   │   ├── uuid.ts
+│   │   ├── zilliqa-utils.ts
+│   │   ├── utils.ts
+│   │   ├── hex.ts
+│   │   ├── index.ts
+│   │   ├── bech32.ts
+│   │   └── validator.ts
+│   ├── contract.ts
+│   ├── blockchain.ts
+│   ├── stream
+│   │   ├── stream-keys.ts
+│   │   ├── secure-message.ts
+│   │   ├── tab-stream.ts
+│   │   ├── subject.ts
+│   │   └── index.ts
+│   ├── zilpay.ts
+│   ├── assert.ts
+│   ├── favicon.ts
+│   ├── transaction.ts
+│   ├── index.ts
+│   ├── provider.ts
+│   ├── type-checker.ts
+│   └── handler.ts
+├── tsconfig.json
+└── index.ts
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/types/index.ts`:
+
+```ts
+export type Params = TxParams[] | string[] | number[] | (string | string[] | number[])[];
+
+export interface ReqBody {
+  type: string;
+  payload?: any;
+  domain?: string;
+  from?: string;
+}
+
+export interface DataParams {
+  params: ParamItem[];
+  _tag: string;
+}
+
+export interface ParamItem {
+  type: string;
+  value: string | unknown[];
+  vname: string;
+}
+
+export interface TxParams {
+  amount: string;
+  code: string;
+  data: string;
+  gasLimit: string;
+  gasPrice: string;
+  nonce: number;
+  priority: boolean;
+  pubKey: string;
+  signature?: string;
+  toAddr: string;
+  version?: number;
+  from?: string;
+  hash?: string;
+}
+
+export interface TransactionParams extends TxParams {
+  ContractAddress?: string;
+  senderAddress?: string;
+  TranID?: string;
+  ID?: string;
+  receipt?: TransitionReceipt;
+  Info?: string;
+}
+
+export interface Transition {
+  accepted: boolean;
+  addr: string;
+  depth: number;
+  msg: unknown
+}
+
+export interface TxEvent {
+  address: string;
+  params: ParamItem[];
+  _eventname: string;
+}
+
+export interface TransitionReceipt {
+  accepted: boolean;
+  cumulative_gas: string;
+  epoch_num: string;
+  success: boolean;
+  transitions: Transition[];
+  event_logs?: TxEvent[];
+  exceptions?: Array<number[]>;
+  errors?: {
+    line: number;
+    message: string;
+  }[];
+}
+
+export interface MessageParams {
+  content: string;
+  uuid: string;
+  title: string;
+  icon: string;
+};
+
+export interface InpageWallet {
+  base16: string;
+  bech32: string;
+}
+
+export interface TxBlock {
+  TxBlock: {
+    body: {
+      BlockHash: string;
+      HeaderSign: string;
+      MicroBlockInfos: {
+        MicroBlockHash: string;
+        MicroBlockShardId: number;
+        MicroBlockTxnRootHash: string;
+      }[];
+    };
+    header: {
+      BlockNum: string;
+      DSBlockNum: string;
+      GasLimit: string;
+      GasUsed: string;
+      MbInfoHash: string;
+      MinerPubKey: string;
+      NumMicroBlocks: number;
+      NumPages: number;
+      NumTxns: number;
+      PrevBlockHash: string;
+      Rewards: string;
+      StateDeltaHash: string;
+      StateRootHash: string;
+      Timestamp: string;
+      TxnFees: string;
+      Version: number;
+    };
+  };
+  TxHashes: Array<string[]>;
+}
+
+export interface SignedMessage {
+  message: string;
+  publicKey: string;
+  signature: string;
+}
+
+export interface SignedMessage {
+  message: string;
+  publicKey: string;
+  signature: string;
+}
+
+export interface InputCipherParams {
+  content: string;
+  uuid: string;
+  title: string;
+  icon: string;
+};
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/rollup.config.mjs`:
+
+```mjs
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
+import commonjs from '@rollup/plugin-commonjs';
+
+const production = !process.env.ROLLUP_WATCH;
+
+export default [
+	{
+		input: 'index.ts',
+		output: {
+			dir: 'dist',
+			name: 'web3',
+			format: production ? 'es' : 'umd',
+			sourcemap: true
+		},
+		plugins: [
+			resolve({
+				brower: true,
+				preferBuiltins: false,
+			}),
+			typescript({
+				sourceMap: true,
+				declaration: true,
+				inlineSources: true
+			}),
+			commonjs()
+		]
+	}
+];
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/config/errors.ts`:
+
+```ts
+export enum ErrorMessages {
+  GuardNotSynced = 'Guard is not synced',
+  WalletNotReady = 'Wallet is not sync.',
+  IncorrectPassword = 'Incorect password',
+  WalletNotEnabled = 'Wallet is not enabled.',
+  IncorrectType = 'Incorect params type',
+  IncorrectFormat = 'Incorect address format',
+  IncorrectKey = 'Incorrect Key.',
+  RequestFailed = 'Something Wrong with node.',
+  BadPrivateKey = 'Bad private key.',
+  BadPubKey = 'Bad public key.',
+  Base16NotValid = 'is not a valid base 16 address.',
+  CannotConvertBytes = 'Could not convert byte Buffer to 5-bit Buffer.',
+  InvalidBech32 = 'Invalid bech32 address.',
+  ExpectedHRP = 'Expected hrp to be zil.',
+  InvalidMnemonicChecksum = 'Invalid mnemonic checksum',
+  BytesAandBIncorrect = 'Both a and b must be 16 bits or less.',
+  PrivateKeyMustBe = 'Private key must be 32 bytes.',
+  PublicKeyMustBe = 'Public key must be 33 or 65 bytes.',
+  CouldNotDeriveHardened = 'Could not derive hardened child key',
+  Scam = 'Scam detected.',
+  IncorrectMnemonic = 'Invalid mnemonic.',
+  ShouldBeNumber = 'should be number',
+  MustBeUnique = 'Address must be unique.',
+  MustBe = 'must be unique.',
+  MustBeObject = 'Must be object.',
+  MustBeString = 'Must be string.',
+  MustBeInt = 'Must be Int.',
+  RequiredParam = 'is required.',
+  OutOfIndex = 'Out of index.',
+  IncorrectParams = 'Incorrect argument',
+  SSnAllowNet = 'SSn list allow on mainnet only.',
+  CannotExportLedger = 'Cannot export privateKey from ledger.',
+  HightNonce = 'nonce too High',
+  IncorrectNetwrok = 'Incorrect selected netwrok.',
+  TrackedAccount = 'Tracked account cannot operate',
+  IncorrectConfigParams = 'Incorrect Config params',
+
+  Disabled = 'ZilPay is disabled.',
+  Connect = 'User is\'t connections.',
+  Rejected = 'Rejected by user',
+  InvalidDecryption = 'Invalid decryption',
+
+  WebHidNotSupported = 'WEBHID is not supported.',
+  NoFoundDeviced = 'No one device connected',
+
+  CannotBeZero = 'A param cannot be zero.',
+  TimeOut = 'request failed by timeout!'
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/config/contracts.ts`:
+
+```ts
+export enum Contracts {
+  ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/config/methods.ts`:
+
+```ts
+export enum RPCMethod {
+  // Network-related methods
+  GetNetworkId = 'GetNetworkId',
+
+  // Blockchain-related methods
+  GetBlockchainInfo = 'GetBlockchainInfo',
+  GetShardingStructure = 'GetShardingStructure',
+  GetDSBlock = 'GetDsBlock',
+  GetLatestDSBlock = 'GetLatestDsBlock',
+  GetNumDSBlocks = 'GetNumDSBlocks',
+  GetDSBlockRate = 'GetDSBlockRate',
+  DSBlockListing = 'DSBlockListing',
+  GetTxBlock = 'GetTxBlock',
+  GetLatestTxBlock = 'GetLatestTxBlock',
+  GetNumTxBlocks = 'GetNumTxBlocks',
+  GetTxBlockRate = 'GetTxBlockRate',
+  TxBlockListing = 'TxBlockListing',
+  GetNumTransactions = 'GetNumTransactions',
+  GetTransactionRate = 'GetTransactionRate',
+  GetCurrentMiniEpoch = 'GetCurrentMiniEpoch',
+  GetCurrentDSEpoch = 'GetCurrentDSEpoch',
+  GetPrevDifficulty = 'GetPrevDifficulty',
+  GetPrevDSDifficulty = 'GetPrevDSDifficulty',
+  GetTotalCoinSupply = 'GetTotalCoinSupply',
+  GetMinerInfo = 'GetMinerInfo',
+
+  // Transaction-related methods
+  CreateTransaction = 'CreateTransaction',
+  GetTransaction = 'GetTransaction',
+  GetTransactionStatus = 'GetTransactionStatus',
+  GetRecentTransactions = 'GetRecentTransactions',
+  GetTransactionsForTxBlock = 'GetTransactionsForTxBlock',
+  GetTransactionsForTxBlockEx = 'GetTransactionsForTxBlockEx',
+  GetTxnBodiesForTxBlock = 'GetTxnBodiesForTxBlock',
+  GetTxnBodiesForTxBlockEx = 'GetTxnBodiesForTxBlockEx',
+  GetNumTxnsTxEpoch = 'GetNumTxnsTxEpoch',
+  GetNumTxnsDSEpoch = 'GetNumTxnsDSEpoch',
+  GetMinimumGasPrice = 'GetMinimumGasPrice',
+
+  // Contract-related methods
+  GetContractAddressFromTransactionID = 'GetContractAddressFromTransactionID',
+  GetSmartContracts = 'GetSmartContracts',
+  GetSmartContractCode = 'GetSmartContractCode',
+  GetSmartContractInit = 'GetSmartContractInit',
+  GetSmartContractState = 'GetSmartContractState',
+  GetSmartContractSubState = 'GetSmartContractSubState',
+  GetStateProof = 'GetStateProof',
+
+  // Account-related methods
+  GetBalance = 'GetBalance',
+
+  //// deprecated /////
+  GetPendingTxn = 'GetPendingTxn',
+  GetPendingTxns = 'GetPendingTxns'
+  //// deprecated /////
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/config/gas.ts`:
+
+```ts
+
+export enum Gas {
+  gasPrice = 2000,
+  gasLimit = 50,
+  multiplier = 1
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/package.json`:
+
+```json
+{
+  "name": "@zilpay/zilpay-web3",
+  "version": "0.0.1",
+  "repository": "git@github.com:zilpay/zilpay-web3.git",
+  "author": "Rinat <lich666black@gmail.com>",
+  "type": "module",
+  "license": "MIT",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.js",
+  "main": "index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "serve": "http-server ./"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/big.js": "^6.2.2",
+    "@types/bn.js": "^5.1.5",
+    "@types/bun": "latest",
+    "http-server": "^14.1.1",
+    "rollup": "^4.18.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "browser": {
+    "crypto": false
+  },
+  "keywords": [
+    "zilliqa",
+    "web3",
+    "zilpay",
+    "blockchain",
+    "bitcoin",
+    "bytes",
+    "cryptography"
+  ],
+  "files": [
+    "dist/*",
+    "config/*",
+    "lib/*",
+    "types/*",
+    "index.js",
+    "index.ts"
+  ],
+  "dependencies": {
+    "big.js": "^6.2.1",
+    "bn.js": "^5.2.1",
+    "buffer": "^6.0.3",
+    "long": "^5.2.3"
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/wallet.ts`:
+
+```ts
+import type { TabStream } from "./stream/tab-stream";
+import type { MessageParams, TxParams } from "types";
+import type { InpageWallet } from "types";
+import type { Subject } from './stream/subject';
+import type { TxBlock } from 'types';
+import type { SignedMessage } from "types";
+import type { InputCipherParams } from "types";
+
+import assert from './assert';
+import { uuidv4 } from './crypto/uuid';
+import { Transaction } from "./transaction";
+import { MTypeTab, MTypeTabContent } from "./stream/stream-keys";
+import { TypeOf } from "./type-checker";
+import { ContentMessage } from "./stream/secure-message";
+import { CryptoUtils } from "./crypto";
+import { ErrorMessages } from "config/errors";
+import { getFavicon } from "./favicon";
+
+export class Wallet {
+  #stream: TabStream;
+  #subject: Subject;
+
+  #isConnect = false;
+  #isEnable = false;
+  #http: string | null = null;
+  #net = 'mainnet';
+  #defaultAccount: InpageWallet | null = null;
+
+  public txns = new Set<string>();
+
+  public get isConnect() {
+    return this.#isConnect;
+  }
+
+  public get isEnable() {
+    return this.#isEnable;
+  }
+
+  public get net() {
+    return this.#net;
+  }
+
+  public get defaultAccount() {
+    return this.#defaultAccount;
+  }
+
+  public get http() {
+    return this.#http;
+  }
+
+  constructor(stream: TabStream, subject: Subject) {
+    this.#stream = stream;
+    this.#subject = subject;
+
+    if (globalThis.window || globalThis.document) {
+      this.#subscribe();
+    }
+  }
+
+  public observableAccount() {
+    assert(this.isEnable, ErrorMessages.Disabled);
+    assert(this.isConnect, ErrorMessages.Connect);
+
+    return {
+      subscribe: (cb: (account: InpageWallet) => void) => {
+        if (this.#defaultAccount) {
+          cb(this.#defaultAccount);
+        }
+        const obs = this.#subject.on((msg) => {
+          let account: InpageWallet | null = null;
+
+          switch (msg.type) {
+            case MTypeTab.ADDRESS_CHANGED:
+              account = msg.payload.account;
+              break;
+            case MTypeTab.GET_WALLET_DATA:
+              account = msg.payload.account;
+              break;
+            case MTypeTab.LOCK_STAUS:
+              account = msg.payload.account;
+              break;
+            case MTypeTab.RESPONSE_TO_DAPP:
+              account = msg.payload.account;
+              break;
+            default:
+              break;
+          }
+
+          if (account) {
+            cb(account);
+          }
+        });
+
+        return {
+          unsubscribe: () => obs()
+        };
+      }
+    };
+  }
+
+  /**
+   * Observable for new block was created.
+   */
+  public observableBlock() {
+    assert(this.isEnable, ErrorMessages.Disabled);
+    assert(this.isConnect, ErrorMessages.Connect);
+
+    return {
+      subscribe: (cb: (block: TxBlock) => void) => {
+        const obs = this.#subject.on((msg) => {
+          if (msg.type === MTypeTab.NEW_BLOCK) {
+            cb(msg.payload.block);
+          }
+        });
+
+        return {
+          unsubscribe: () => obs()
+        };
+      }
+    };
+  }
+
+  public observableNetwork() {
+    assert(this.isEnable, ErrorMessages.Disabled);
+    assert(this.isConnect, ErrorMessages.Connect);
+
+    return {
+      subscribe: (cb: (net: string) => void) => {
+        const obs = this.#subject.on((msg) => {
+          switch (msg.type) {
+            case MTypeTab.GET_WALLET_DATA:
+              cb(msg.payload.netwrok);
+              break;
+            case MTypeTab.NETWORK_CHANGED:
+              cb(msg.payload.netwrok);
+              break;
+            default:
+              break;
+          }
+        });
+
+        return {
+          unsubscribe: () => obs()
+        };
+      }
+    };
+  }
+
+  /**
+   * @deprecated
+   */
+  public observableTransaction(...txns: string[]) {
+    console.warn('this method is deprecated and will rework');
+    assert(this.isEnable, ErrorMessages.Disabled);
+    assert(this.isConnect, ErrorMessages.Connect);
+
+    if (txns && txns.length !== 0) {
+      this.addTransactionsQueue(...txns);
+    }
+
+    return {
+      subscribe: (cb: (tx: string) => void) => {
+        const obs = this.#subject.on((msg) => {
+          if (msg.type !== MTypeTab.NEW_BLOCK) return;
+          const block = msg.payload.block as TxBlock;
+
+          for (let index = 0; index < block.TxHashes.length; index++) {
+            const elements = block.TxHashes[index];
+            for (let i = 0; i < elements.length; i++) {
+              const hash = elements[i];
+              if (this.txns.has(hash)) {
+                cb(hash);
+                this.txns.delete(hash);
+              }
+            }
+          }
+        });
+
+        return {
+          unsubscribe: () => obs()
+        };
+      }
+    };
+  }
+
+  public addTransactionsQueue(...txns: string[]) {
+    console.warn('this method is deprecated and will rework');
+    for (let index = 0; index < txns.length; index++) {
+      const tx = txns[index];
+      this.txns.add(CryptoUtils.toHex(tx));
+    }
+
+    return Array.from(this.txns);
+  }
+
+  public async sign(arg: Transaction | string): Promise<SignedMessage | TxParams> {
+    assert(this.isConnect, ErrorMessages.Connect);
+
+    if (TypeOf.isString(arg)) {
+      return this.#signMessage(String(arg));
+    } else if (arg instanceof Transaction) {
+      return this.#signTransaction(arg);
+    }
+
+    return Promise.reject(
+      new TypeError(`payload ${ErrorMessages.MustBeObject} or ${ErrorMessages.MustBeString}`)
+    );
+  }
+
+  public async connect(): Promise<boolean> {
+    const type = MTypeTab.CONNECT_APP;
+    const recipient = MTypeTabContent.CONTENT;
+    const uuid = uuidv4();
+    const icon = getFavicon();
+    const title = window.document.title;
+    const payload = {
+      title,
+      uuid,
+      icon
+    };
+
+    new ContentMessage({
+      type,
+      payload
+    }).send(this.#stream, recipient);
+
+    return new Promise((resolve) => {
+      const obs = this.#subject.on((msg) => {
+        if (msg.type !== MTypeTab.RESPONSE_TO_DAPP) return;
+        if (msg.payload.uuid !== uuid) return;
+
+        this.#isConnect = Boolean(msg.payload.account);
+        this.#defaultAccount = (msg.payload.account as InpageWallet) || null;
+
+        obs();
+        return resolve(this.#isConnect);
+      });
+    });
+  }
+
+  public async encrypt(content: string): Promise<object> {
+    const type = MTypeTab.ADD_ENCRYPTION;
+    const recipient = MTypeTabContent.CONTENT;
+    const uuid = uuidv4();
+    const title = window.document.title;
+    const icon = getFavicon();
+    const payload: InputCipherParams = {
+      title,
+      uuid,
+      icon,
+      content
+    };
+
+    new ContentMessage({
+      type,
+      payload
+    }).send(this.#stream, recipient);
+
+    return new Promise((resolve, reject) => {
+      const obs = this.#subject.on((msg) => {
+        if (msg.type !== MTypeTab.RES_ENCRYPTION) return;
+        if (msg.payload.uuid !== uuid) return;
+
+        if (msg.payload && msg.payload.reject) {
+          obs();
+          return reject(msg.payload.reject);
+        }
+
+        obs();
+        return resolve(msg.payload.resolve);
+      });
+    });
+  }
+
+  public async decrypt(content: string): Promise<object> {
+    const type = MTypeTab.ADD_DECRYPTION;
+    const recipient = MTypeTabContent.CONTENT;
+    const uuid = uuidv4();
+    const icon = getFavicon();
+    const title = window.document.title;
+    const payload: InputCipherParams = {
+      title,
+      uuid,
+      icon,
+      content
+    };
+
+    new ContentMessage({
+      type,
+      payload
+    }).send(this.#stream, recipient);
+
+    return new Promise((resolve, reject) => {
+      const obs = this.#subject.on((msg) => {
+        if (msg.type !== MTypeTab.RES_DECRYPTION) return;
+        if (msg.payload.uuid !== uuid) return;
+
+        if (msg.payload && msg.payload.reject) {
+          obs();
+          return reject(msg.payload.reject);
+        }
+
+        obs();
+        return resolve(msg.payload.resolve);
+      });
+    });
+  }
+
+  public async disconnect() {
+    const type = MTypeTab.DISCONNECT_APP;
+    const recipient = MTypeTabContent.CONTENT;
+    const icon = getFavicon();
+    const uuid = uuidv4();
+    const payload = {
+      uuid,
+      icon
+    };
+
+    new ContentMessage({
+      type,
+      payload
+    }).send(this.#stream, recipient);
+
+    return new Promise((resolve) => {
+      const obs = this.#subject.on((msg) => {
+        if (msg.type !== MTypeTab.RESPONSE_TO_DAPP) return;
+        if (msg.payload.uuid !== uuid) return;
+
+        this.#isConnect = false;
+        this.#defaultAccount = null;
+
+        obs();
+        return resolve(null);
+      });
+    });
+  }
+
+  #subscribe() {
+    this.#subject.on((msg) => {
+      switch (msg.type) {
+        case MTypeTab.ADDRESS_CHANGED:
+          this.#defaultAccount = msg.payload.account;
+          break;
+        case MTypeTab.GET_WALLET_DATA:
+          this.#defaultAccount = msg.payload.account;
+          this.#http = msg.payload.http;
+          this.#net = msg.payload.netwrok;
+          this.#isConnect = msg.payload.isConnect;
+          this.#isEnable = msg.payload.isEnable;
+          break;
+        case MTypeTab.LOCK_STAUS:
+          this.#isEnable = msg.payload.isEnable;
+          this.#defaultAccount = msg.payload.account;
+          break;
+        case MTypeTab.NETWORK_CHANGED:
+          this.#net = msg.payload.netwrok;
+          // TODO: rename to http.
+          this.#http = msg.payload.node;
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  #signMessage(message: string): Promise<SignedMessage> {
+    const type = MTypeTab.SIGN_MESSAGE;
+    const recipient = MTypeTabContent.CONTENT;
+    const uuid = uuidv4();
+    const icon = getFavicon();
+    const title = window.document.title;
+    const payload: MessageParams = {
+      content: message,
+      uuid,
+      title,
+      icon
+    };
+
+    new ContentMessage({
+      type,
+      payload
+    }).send(this.#stream, recipient);
+
+    return new Promise((resolve, reject) => {
+      const obs = this.#subject.on((msg) => {
+        if (msg.type !== MTypeTab.SING_MESSAGE_RES) return;
+        if (msg.payload.uuid !== uuid) return;
+
+        if (msg.payload && msg.payload.reject) {
+          obs();
+          return reject(msg.payload.reject);
+        }
+
+        obs();
+        return resolve(msg.payload.resolve as SignedMessage);
+      });
+    });
+  }
+
+  #signTransaction(tx: Transaction): Promise<TxParams> {
+    const type = MTypeTab.CALL_TO_SIGN_TX;
+    const recipient = MTypeTabContent.CONTENT;
+    const uuid = uuidv4();
+    const icon = getFavicon();
+    const payload = {
+      ...tx.payload,
+      uuid,
+      icon,
+      title: window.document.title,
+      nonce: undefined
+    };
+
+    // Send transaction to content.js > background.js.
+    new ContentMessage({
+      type,
+      payload
+    }).send(this.#stream, recipient);
+
+    return new Promise((resolve, reject) => {
+      const obs = this.#subject.on((msg) => {
+        if (msg.type !== MTypeTab.TX_RESULT) return;
+        if (msg.payload.uuid !== uuid) return;
+
+        if (msg.payload && msg.payload.reject) {
+          obs();
+          return reject(msg.payload.reject);
+        }
+
+        obs();
+        return resolve(msg.payload.resolve as TxParams);
+      });
+    });
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/crypto/uuid.ts`:
+
+```ts
+export function uuidv4() {
+  const size = 20;
+
+  return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/crypto/zilliqa-utils.ts`:
+
+```ts
+import BN from 'bn.js';
+import Big from 'big.js';
+import Long from 'long';
+import { Validator } from './validator';
+
+Big.PE = 99;
+
+export const Units = {
+  Li: Big('1'),
+  Qa: Big('1000000'),
+  Zil: Big('1000000000000')
+};
+
+export function fromQa(
+  qa: Big | string | number,
+  unit: Big
+) {
+  const value = Big(qa);
+  const res = value.div(unit);
+
+  return String(res);
+}
+
+export function toQa(
+  qa: Big | number | string,
+  unit: Big
+) {
+  const value = Big(qa);
+  const res = value.mul(unit);
+  return String(res.round());
+}
+
+export const ZilliqaUtils = {
+  BN,
+  Big,
+  Long,
+  validation: Validator,
+  units: {
+    Units,
+    fromQa,
+    toQa
+  }
+};
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/crypto/utils.ts`:
+
+```ts
+/*
+ * Project: ZilPay-wallet
+ * Author: Rinat(hiccaru)
+ * -----
+ * Modified By: the developer formerly known as Rinat(hiccaru) at <lich666black@gmail.com>
+ * -----
+ * Copyright (c) 2021 ZilPay
+ */
+import { Validator } from './validator';
+import { tohexString } from './hex';
+import { fromBech32Address, toBech32Address } from './bech32';
+
+export const CryptoUtils = {
+  isValidChecksumAddress(address: string) {
+    return (
+      Validator.isAddress(tohexString(address)) && address
+    );
+  },
+  fromBech32Address(address: string) {
+    return fromBech32Address(address);
+  },
+  toHex(addr: string) {
+    return tohexString(addr);
+  },
+  toBech32Address(addr: string) {
+    if (Validator.isBech32(addr)) {
+      return addr;
+    }
+
+    return toBech32Address(addr);
+  },
+  normaliseAddress(addr: string) {
+    if (Validator.isBech32(addr)) {
+      return this.fromBech32Address(addr);
+    }
+    if (Validator.isAddress(addr)) {
+      return addr;
+    }
+
+    throw Error(
+      'Wrong address format, should be either bech32 or checksummed address',
+    );
+  },
+  toChecksumAddress(addr: string) {
+    if (Validator.isBech32(addr)) {
+      addr = this.fromBech32Address(addr);
+    }
+
+    return addr;
+  }
+};
+
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/crypto/hex.ts`:
+
+```ts
+export function tohexString(hex: string) {
+  return String(hex).toLowerCase().replace('0x', '');
+}
+
+export const isByteString = (str: string, len: number) => {
+  return Boolean(tohexString(str).match(`^[0-9a-fA-F]{${len}}$`));
+};
+
+export const isAddress = (address: string) => {
+  if (!isByteString(address, 40)) {
+    throw new Error('Base16NotValid');
+  }
+};
+
+export const isBech32 = (raw: string) => {
+  return !!raw.match(/^zil1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38}$/);
+};
+
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/crypto/index.ts`:
+
+```ts
+export * from './hex';
+export * from './utils';
+export * from './bech32';
+export * from './validator';
+export * from './zilliqa-utils';
+  
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/crypto/bech32.ts`:
+
+```ts
+/*
+ * Project: ZilPay-wallet
+ * Author: Rinat(hiccaru)
+ * -----
+ * Modified By: the developer formerly known as Rinat(hiccaru) at <lich666black@gmail.com>
+ * -----
+ * Copyright (c) 2021 ZilPay
+ */
+import { Buffer } from 'buffer';
+import { isAddress, tohexString } from "./hex";
+
+const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+const HRP = 'zil';
+const GENERATOR = [
+  0x3b6a57b2,
+  0x26508e6d,
+  0x1ea119fa,
+  0x3d4233dd,
+  0x2a1462b3
+];
+
+const polymod = (values: Buffer): number => {
+  let chk = 1;
+  // tslint:disable-next-line
+  for (let p = 0; p < values.length; ++p) {
+    const top = chk >> 25;
+    chk = ((chk & 0x1ffffff) << 5) ^ values[p];
+    for (let i = 0; i < 5; ++i) {
+      if ((top >> i) & 1) {
+        chk ^= GENERATOR[i];
+      }
+    }
+  }
+
+  return chk;
+};
+
+const hrpExpand = (hrp: string): Buffer => {
+  const ret = [];
+  let p;
+  for (p = 0; p < hrp.length; ++p) {
+    ret.push(hrp.charCodeAt(p) >> 5);
+  }
+  ret.push(0);
+  for (p = 0; p < hrp.length; ++p) {
+    ret.push(hrp.charCodeAt(p) & 31);
+  }
+  return Buffer.from(ret);
+};
+
+/**
+ * convertBits
+ *
+ * groups buffers of a certain width to buffers of the desired width.
+ *
+ * For example, converts byte buffers to buffers of maximum 5 bit numbers,
+ * padding those numbers as necessary. Necessary for encoding Ethereum-style
+ * addresses as bech32 ones.
+ *
+ * @param {Buffer} data
+ * @param {number} fromWidth
+ * @param {number} toWidth
+ * @param {boolean} pad
+ * @returns {Buffer|null}
+ */
+export function convertBits(data: Buffer, fromWidth: number, toWidth: number, pad: boolean = true): Buffer | null {
+  let acc = 0;
+  let bits = 0;
+  const ret = [];
+  const maxv = (1 << toWidth) - 1;
+  // tslint:disable-next-line
+  for (let p = 0; p < data.length; ++p) {
+    const value = data[p];
+    if (value < 0 || value >> fromWidth !== 0) {
+      return null;
+    }
+    acc = (acc << fromWidth) | value;
+    bits += fromWidth;
+    while (bits >= toWidth) {
+      bits -= toWidth;
+      ret.push((acc >> bits) & maxv);
+    }
+  }
+
+  if (pad) {
+    if (bits > 0) {
+      ret.push((acc << (toWidth - bits)) & maxv);
+    }
+  } else if (bits >= fromWidth || (acc << (toWidth - bits)) & maxv) {
+    return null;
+  }
+
+  return Buffer.from(ret);
+}
+
+function verifyChecksum(hrp: string, data: Buffer) {
+  return polymod(Buffer.concat([hrpExpand(hrp), data])) === 1;
+}
+
+function createChecksum(hrp: string, data: Buffer) {
+  const values = Buffer.concat([
+    Buffer.from(hrpExpand(hrp)),
+    data,
+    Buffer.from([0, 0, 0, 0, 0, 0]),
+  ]);
+  const mod = polymod(values) ^ 1;
+  const ret = [];
+  for (let p = 0; p < 6; ++p) {
+    ret.push((mod >> (5 * (5 - p))) & 31);
+  }
+  return Buffer.from(ret);
+}
+
+export const encode = (hrp: string, data: Buffer) => {
+  const combined = Buffer.concat([data, createChecksum(hrp, data)]);
+  let ret = hrp + '1';
+  // tslint:disable-next-line
+  for (let p = 0; p < combined.length; ++p) {
+    ret += CHARSET.charAt(combined[p]);
+  }
+  return ret;
+};
+
+export const decode = (bechString: string) => {
+  let p;
+  let hasLower = false;
+  let hasUpper = false;
+  for (p = 0; p < bechString.length; ++p) {
+    if (bechString.charCodeAt(p) < 33 || bechString.charCodeAt(p) > 126) {
+      return null;
+    }
+    if (bechString.charCodeAt(p) >= 97 && bechString.charCodeAt(p) <= 122) {
+      hasLower = true;
+    }
+    if (bechString.charCodeAt(p) >= 65 && bechString.charCodeAt(p) <= 90) {
+      hasUpper = true;
+    }
+  }
+  if (hasLower && hasUpper) {
+    return null;
+  }
+  bechString = bechString.toLowerCase();
+  const pos = bechString.lastIndexOf('1');
+  if (pos < 1 || pos + 7 > bechString.length || bechString.length > 90) {
+    return null;
+  }
+  const hrp = bechString.substring(0, pos);
+  const data = [];
+  for (p = pos + 1; p < bechString.length; ++p) {
+    const d = CHARSET.indexOf(bechString.charAt(p));
+    if (d === -1) {
+      return null;
+    }
+    data.push(d);
+  }
+
+  if (!verifyChecksum(hrp, Buffer.from(data))) {
+    return null;
+  }
+
+  return { hrp, data: Buffer.from(data.slice(0, data.length - 6)) };
+};
+
+export const toBech32Address = (address: string): string => {
+  isAddress(address);
+
+  const normalizedAddress = tohexString(address);
+  const addrBz = convertBits(
+    Buffer.from(normalizedAddress, 'hex'),
+    8,
+    5,
+  );
+
+  if (!addrBz) {
+    throw new Error("CannotConvertBytes");
+  }
+
+  return encode(HRP, addrBz);
+};
+
+export const fromBech32Address = (address: string): string => {
+  const res = decode(address);
+  if (!res) {
+    throw new Error("InvalidBech32");
+  }
+  const { hrp, data } = res;
+  const shouldBe = HRP;
+  if (hrp !== shouldBe) {
+    throw new Error("ExpectedHRP");
+  }
+  const buf = convertBits(data, 5, 8, false);
+  if (!buf) {
+    throw new Error("CannotConvertBytes");
+  }
+  return buf.toString('hex');
+};
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/crypto/validator.ts`:
+
+```ts
+import BN from 'bn.js';
+import Long from 'long';
+import { isBech32, isByteString } from './hex';
+
+export const Validator = {
+  isAddress(x: unknown) {
+    return isByteString(String(x), 40);
+  },
+  isBech32(x: unknown) {
+    return isBech32(String(x));
+  },
+  isBN(x: unknown) {
+    return BN.isBN(x);
+  },
+  isLong(x: unknown) {
+    return Long.isLong(x);
+  }
+};
+
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/contract.ts`:
+
+```ts
+import type { TransactionParams, TxParams } from 'types';
+
+import { CryptoUtils } from './crypto';
+import assert from './assert';
+import { ErrorMessages } from 'config/errors';
+import { Contracts } from 'config/contracts';
+import { TransactionFactory, Transaction } from './transaction';
+import { TypeOf } from './type-checker';
+
+export class Contract {
+  public transaction: TransactionFactory;
+  public address?: string;
+  public code?: string;
+  public init?: object[];
+
+  get contractAddress() {
+    return CryptoUtils.toHex(String(this.address));
+  }
+
+  constructor(
+    transaction: TransactionFactory,
+    address?: string,
+    code?: string,
+    init?: object[]
+  ) {
+    this.transaction = transaction;
+    this.code = code;
+    this.init = init;
+
+    if (address) {
+      this.address = CryptoUtils.normaliseAddress(address);
+    }
+  }
+
+  public async deploy(params: TransactionParams, priority = false) {
+    assert(Boolean(this.code), `this.code ${ErrorMessages.RequiredParam}`);
+    assert(Boolean(this.init), `this.init ${ErrorMessages.RequiredParam}`);
+
+    const { wallet } = this.transaction;
+    let tx = this.transaction.new({
+      ...params,
+      priority,
+      toAddr: Contracts.ZERO_ADDRESS,
+      code: this.code || '',
+      data: JSON.stringify(this.init),
+    });
+    const result = await wallet.sign(tx);
+
+    tx = new Transaction(result as TxParams);
+
+    this.address = tx.ContractAddress;
+
+    return [tx, this];
+  }
+
+  public async call(tag: string, args: object[], params: TransactionParams, priority = false) {
+    assert(Boolean(this.address), `this.address ${ErrorMessages.RequiredParam}`);
+    assert(Boolean(tag), `tag ${ErrorMessages.RequiredParam}`);
+
+    const { wallet } = this.transaction;
+    const data = JSON.stringify({
+      _tag: tag,
+      params: args
+    });
+    const tx = this.transaction.new({
+      ...params,
+      data,
+      priority,
+      toAddr: this.contractAddress,
+    });
+    const result = await wallet.sign(tx);
+
+    return new Transaction(result as TxParams);
+  }
+
+  public async getState() {
+    assert(Boolean(this.address), `this.address ${ErrorMessages.RequiredParam}`);
+
+    const { RPCMethod } = this.transaction.provider;
+    const { result, error } = await this.transaction.provider.send(
+      RPCMethod.GetSmartContractState,
+      this.contractAddress
+    );
+
+    if (error) {
+      throw new Error(String(error));
+    }
+
+    return result;
+  }
+
+  public async getSubState(variableName: string, indices: string[] = []) {
+    assert(Boolean(this.address), `this.address ${ErrorMessages.RequiredParam}`);
+    assert(Boolean(variableName), `variableName ${ErrorMessages.RequiredParam}`);
+    assert(Array.isArray(indices), `indices ${ErrorMessages.RequiredParam}`);
+
+    const { RPCMethod } = this.transaction.provider;
+    const { result, error } = await this.transaction.provider.send(
+      RPCMethod.GetSmartContractSubState,
+      this.contractAddress,
+      variableName,
+      indices
+    );
+
+    if (error) {
+      throw new Error(String(error));
+    }
+
+    return result;
+  }
+
+  public async getInit(): Promise<object[]> {
+    assert(Boolean(this.address), `this.address ${ErrorMessages.RequiredParam}`);
+
+    const { RPCMethod } = this.transaction.provider;
+    const res = await this.transaction.provider.send(
+      RPCMethod.GetSmartContractInit,
+      this.contractAddress
+    );
+
+    if (res.error) {
+      throw new Error(String(res.error));
+    }
+
+    this.init = res.result as object[];
+
+    return res.result as object[];
+  }
+
+  public async getCode() {
+    assert(Boolean(this.address), `this.address ${ErrorMessages.RequiredParam}`);
+
+    const { RPCMethod } = this.transaction.provider;
+    const { result, error } = await this.transaction.provider.send(
+      RPCMethod.GetSmartContractCode,
+      this.contractAddress
+    );
+
+    if (TypeOf.isObject(result)) {
+      this.code = String((result as any)['code']);
+    }
+
+    if (error) {
+      throw new Error(String(error));
+    }
+
+    return this.code;
+  }
+}
+
+export class ContractControl {
+  public transactions: TransactionFactory;
+
+  constructor(transactions: TransactionFactory) {
+    this.transactions = transactions;
+  }
+
+  public at(address: string, code: string) {
+    return new Contract(this.transactions, address, code);
+  }
+
+  public new(code: string, init: object[]) {
+    return new Contract(this.transactions, undefined, code, init);
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/blockchain.ts`:
+
+```ts
+import type { HTTPProvider } from "./provider";
+import type { Wallet } from './wallet';
+import type { TransactionParams, TxParams } from "types";
+
+import assert from './assert';
+import { Transaction } from './transaction';
+import { CryptoUtils } from "./crypto";
+import { RPCMethod } from 'config/methods';
+import { ErrorMessages } from "config/errors";
+
+export class Blockchain {
+  #provider: HTTPProvider;
+  #wallet: Wallet;
+
+  constructor(provider: HTTPProvider, wallet: Wallet) {
+    this.#provider = provider;
+    this.#wallet = wallet;
+  }
+
+  /**
+  * createTransaction
+  *
+  * Creates a transaction and polls the lookup node for a transaction
+  * receipt. The transaction is considered to be lost if it is not confirmed
+  * within the timeout period.
+  * broadcasted to the network.
+  */
+  public async createTransaction(params: TransactionParams, priority = false) {
+    const transaction = new Transaction(params, priority);
+    const result = await this.#wallet.sign(transaction);
+
+    return new Transaction(result as TxParams);
+  }
+
+  /**
+   * getTransaction
+   *
+   * Retrieves a transaction from the blockchain by its hash. If the result
+   * contains an Error, a rejected Promise is returned with the erorr message.
+   * If it does not contained an error, but `receipt.success` is `false`, then
+   * a rejected Transaction instance is returned.
+   */
+  public async getTransaction(hash: string): Promise<Transaction> {
+    assert(Boolean(hash), `hash ${ErrorMessages.RequiredParam}`);
+    const fixedhash = CryptoUtils.toHex(hash);
+
+    const { error, result } = await this.#provider.send(
+      RPCMethod.GetTransaction,
+      String(fixedhash)
+    );
+
+    assert(Boolean(result), String(error));
+
+    return new Transaction(result as TransactionParams);
+  }
+
+  /**
+   * getRecentTransactions
+   *
+   * Gets a list of recent transactions
+   */
+  public getRecentTransactions() {
+    return this.#provider.send(RPCMethod.GetRecentTransactions);
+  }
+
+  public getTransactionsForTxBlockEx(txBlock: number, page: number) {
+    assert(!isNaN(page), `page ${ErrorMessages.ShouldBeNumber}`);
+    assert(!isNaN(txBlock), `txBlock ${ErrorMessages.ShouldBeNumber}`);
+    return this.#provider.send(
+      RPCMethod.GetTransactionsForTxBlockEx,
+      String(txBlock),
+      String(page)
+    );
+  }
+
+  public getTxnBodiesForTxBlockEx(block: number, page: number) {
+    assert(!isNaN(page), `page ${ErrorMessages.ShouldBeNumber}`);
+    assert(!isNaN(block), `block ${ErrorMessages.ShouldBeNumber}`);
+
+    return this.#provider.send(
+      RPCMethod.GetTxnBodiesForTxBlockEx,
+      String(block),
+      String(page)
+    );
+  }
+
+  public getTxnBodiesForTxBlock(block: number) {
+    assert(!isNaN(block), `block ${ErrorMessages.ShouldBeNumber}`);
+    return this.#provider.send(RPCMethod.GetTxnBodiesForTxBlock, String(block));
+  }
+
+  /**
+  * getTransactionsForTxBlock
+  *
+  * Gets all transactions for a given TxBlock, grouped by shard id
+  */
+  public getTransactionsForTxBlock(txBlock: number) {
+    assert(!isNaN(txBlock), 'Txblock should be number');
+    return this.#provider.send(
+      RPCMethod.GetTransactionsForTxBlock,
+      String(txBlock)
+    );
+  }
+
+  /**
+   * getBlockChainInfo
+   */
+  public getBlockChainInfo() {
+    return this.#provider.send(RPCMethod.GetBlockchainInfo);
+  }
+
+  /**
+   * getShardingStructure
+   */
+  public getShardingStructure() {
+    return this.#provider.send(RPCMethod.GetShardingStructure);
+  }
+
+  /**
+   * getDSBlock
+   *
+   * Get details of a Directory Service block by block number.
+   */
+  public getDSBlock(blockNum: number) {
+    assert(!isNaN(blockNum), `blockNum ${ErrorMessages.ShouldBeNumber}`);
+
+    return this.#provider.send(RPCMethod.GetDSBlock, String(blockNum));
+  }
+
+  /**
+   * getLatestDSBlock
+   *
+   * Get details of the most recent Directory Service block.
+   */
+  public getLatestDSBlock() {
+    return this.#provider.send(RPCMethod.GetLatestDSBlock);
+  }
+
+  /**
+   * getNumDSBlocks
+   *
+   * Gets the number of DS blocks that the network has processed.
+   */
+  public getNumDSBlocks() {
+    return this.#provider.send(RPCMethod.GetNumDSBlocks);
+  }
+
+  /**
+   * getDSBlockRate
+   *
+   * Gets the average rate of DS blocks processed per second
+   */
+  public getDSBlockRate() {
+    return this.#provider.send(RPCMethod.GetDSBlockRate);
+  }
+
+  /**
+   * getDSBlockListing
+   *
+   * Get a paginated list of Directory Service blocks. Pass in page number as
+   * parameter. Returns a maxPages variable that specifies the max number of
+   * pages. 1 - latest blocks, maxPages - oldest blocks.
+   */
+  public getDSBlockListing(max: number) {
+    assert(!isNaN(max), `max ${ErrorMessages.ShouldBeNumber}`);
+
+    return this.#provider.send(RPCMethod.DSBlockListing, String(max));
+  }
+
+  /**
+   * getTxBlock
+   *
+   * Get details of a Transaction block by block number.
+   */
+  public getTxBlock(blockNum: number) {
+    assert(!isNaN(blockNum), `blockNum ${ErrorMessages.ShouldBeNumber}`);
+
+    return this.#provider.send(RPCMethod.GetTxBlock, String(blockNum));
+  }
+
+  /**
+   * getLatestTxBlock
+   *
+   * Get details of the most recent Transaction block.
+   */
+  public getLatestTxBlock() {
+    return this.#provider.send(RPCMethod.GetLatestTxBlock);
+  }
+
+  /**
+   * getNumTxBlocks
+   *
+   * Gets the total number of TxBlocks.
+   */
+  public getNumTxBlocks() {
+    return this.#provider.send(RPCMethod.GetNumTxBlocks);
+  }
+
+  /**
+   * getTxBlockRate
+   *
+   * Gets the average number of Tx blocks per second.
+   */
+  public getTxBlockRate() {
+    return this.#provider.send(RPCMethod.GetTxBlockRate);
+  }
+
+  /**
+   * getTxBlockListing
+   *
+   * Get a paginated list of Transaction blocks. Takes a page number as
+   * parameter, where each page contains a list of 10 blocks (max). Returns
+   * a maxPages variable that specifies the max number of pages. 1 - latest
+   * blocks, maxPages - oldest blocks.
+   */
+  public getTxBlockListing(max: number) {
+    assert(!isNaN(max), `max ${ErrorMessages.ShouldBeNumber}`);
+
+    return this.#provider.send(RPCMethod.TxBlockListing, String(max));
+  }
+
+  /**
+   * getNumTransactions
+   *
+   * Gets the number of transactions processed by the network so far.
+   */
+  public getNumTransactions() {
+    return this.#provider.send(RPCMethod.GetNumTransactions);
+  }
+
+  /**
+   * getTransactionRate
+   *
+   * Gets the number of transactions processed per second
+   */
+  public getTransactionRate() {
+    return this.#provider.send(RPCMethod.GetTransactionRate);
+  }
+
+  /**
+   * getCurrentMiniEpoch
+   *
+   * Gets the current Tx Epoch.
+   */
+  public getCurrentMiniEpoch() {
+    return this.#provider.send(RPCMethod.GetCurrentMiniEpoch);
+  }
+
+  /**
+   * getCurrentDSEpoch
+   *
+   * Gets the current DS Epoch.
+   */
+  public getCurrentDSEpoch() {
+    return this.#provider.send(RPCMethod.GetCurrentDSEpoch);
+  }
+
+  /**
+   * getPrevDifficulty
+   *
+   * Gets shard difficulty for previous PoW round
+   */
+  public getPrevDifficulty() {
+    return this.#provider.send(RPCMethod.GetPrevDifficulty);
+  }
+
+  /**
+   * getPrevDSDifficulty
+   *
+   * Gets DS difficulty for previous PoW round
+   */
+  public getPrevDSDifficulty() {
+    return this.#provider.send(RPCMethod.GetPrevDSDifficulty);
+  }
+
+  /**
+   * getTotalCoinSupply
+   *
+   * Returns the total supply (ZIL) of coins in the network.
+   */
+  public getTotalCoinSupply() {
+    return this.#provider.send(RPCMethod.GetTotalCoinSupply);
+  }
+
+  /**
+   * getMinerInfo
+   *
+   * Returns the mining nodes (i.e., the members of the DS committee and shards) at the specified DS block.
+   *
+   * Notes:
+   * 1. Nodes owned by Zilliqa Research are omitted.
+   * 2. dscommittee has no size field since the DS committee size is fixed for a given chain.
+   * 3. For the Zilliqa Mainnet, this API is only available from DS block 5500 onwards.
+   */
+  public getMinerInfo(dsBlockNumber: number) {
+    assert(!isNaN(dsBlockNumber), `dsBlockNumber ${ErrorMessages.ShouldBeNumber}`);
+    return this.#provider.send(RPCMethod.GetMinerInfo, String(dsBlockNumber));
+  }
+
+  /**
+   * getNumTxnsTxEpoch
+   *
+   * Gets the number of transactions procesed for a given Tx Epoch.
+   */
+  public getNumTxnsTxEpoch(epoch: number) {
+    assert(!isNaN(epoch), `epoch ${ErrorMessages.ShouldBeNumber}`);
+
+    return this.#provider.send(RPCMethod.GetNumTxnsTxEpoch, String(epoch));
+  }
+
+  /**
+   * getNumTxnsDSEpoch
+   *
+   * Gets the number of transactions procesed for a given DS Epoch.
+   */
+  public getNumTxnsDSEpoch(epoch: number) {
+    assert(!isNaN(epoch), `epoch ${ErrorMessages.ShouldBeNumber}`);
+
+    return this.#provider.send(RPCMethod.GetNumTxnsDSEpoch, String(epoch));
+  }
+
+  /**
+   * getMinimumGasPrice
+   *
+   * Gets the numeric minimum gas price
+   */
+  public getMinimumGasPrice() {
+    return this.#provider.send(RPCMethod.GetMinimumGasPrice);
+  }
+
+  /**
+   * *@deprecated
+   * getPendingTxn
+   * See the pending status of transaction
+   */
+  public getPendingTxn(hash: string) {
+    console.warn('Method "getPendingTxn" is deprecated and will be disabled');
+    assert(Boolean(hash), `hash ${ErrorMessages.RequiredParam}`);
+    const fixedhash = CryptoUtils.toHex(hash);
+    return this.#provider.send(RPCMethod.GetPendingTxn, fixedhash);
+  }
+
+  /**
+   * getPendingTxns
+   *@deprecated
+   * Returns the pending status of all unvalidated Transactions.
+   *
+   * For each entry, the possible results are:
+   *
+   * confirmed	code	     info
+   * false	     0	  Txn not pending
+   * false	     1	  Nonce too high
+   * false	     2	  Could not fit in as microblock gas limit reached
+   * false	     3	  Transaction valid but consensus not reached
+   */
+  public getPendingTxns() {
+    console.warn('Method "GetPendingTxns" is deprecated and will be disabled');
+    return this.#provider.send(RPCMethod.GetPendingTxns);
+  }
+
+  /**
+   * getBalance
+   *
+   * Gets the balance of an account by address
+   */
+  public getBalance(addr: string) {
+    assert(Boolean(addr), `addr ${ErrorMessages.RequiredParam}`);
+
+    const address = CryptoUtils.toHex(CryptoUtils.normaliseAddress(addr));
+
+    return this.#provider.send(RPCMethod.GetBalance, address);
+  }
+
+  /**
+   * getSmartContractCode - returns the smart contract code of a deployed contract.
+   */
+  public getSmartContractCode(addr: string) {
+    assert(Boolean(addr), `addr ${ErrorMessages.RequiredParam}`);
+    const address = CryptoUtils.toHex(CryptoUtils.normaliseAddress(addr));
+
+    return this.#provider.send(RPCMethod.GetSmartContractCode, address);
+  }
+
+  /**
+   * getSmartContractInit
+   *
+   * @param {string} address
+   * @returns {Promise<RPCResponse<Value[], string>>}
+   */
+  public async getSmartContractInit(addr: string) {
+    assert(Boolean(addr), `addr ${ErrorMessages.RequiredParam}`);
+
+    const address = CryptoUtils.toHex(CryptoUtils.normaliseAddress(addr));
+
+    return this.#provider.send(RPCMethod.GetSmartContractInit, address);
+  }
+
+  /**
+   * getSmartContractState - retrieves the entire state of a smart contract
+   */
+  public getSmartContractState(addr: string) {
+    assert(Boolean(addr), `addr ${ErrorMessages.RequiredParam}`);
+
+    const address = CryptoUtils.toHex(CryptoUtils.normaliseAddress(addr))
+
+    return this.#provider.send(RPCMethod.GetSmartContractState, address);
+  }
+
+  /**
+   * getSmartContractSubState - Queries the contract state, filtered by the variable names.
+   * This function is the filtered version of `getSmartContractState`.
+   * As `getSubState` performs the filtering, `variableName` of a field is required.
+   * If the `subState` is not found, this returns a `null` response.
+   *
+   * @param address - contract address.
+   * @param variableName - variable name within the state
+   * @param indices - (optional) If the variable is of map type, you can specify an index (or indices)
+   */
+  public getSmartContractSubState(addr: string, variableName: string, indices = []) {
+    assert(Boolean(addr), `addr ${ErrorMessages.RequiredParam}`);
+    assert(Boolean(variableName), `variableName ${ErrorMessages.RequiredParam}`);
+    assert(Array.isArray(indices), 'indices must be array');
+
+    const address = CryptoUtils.toHex(CryptoUtils.normaliseAddress(addr));
+
+    return this.#provider.send(
+      RPCMethod.GetSmartContractSubState,
+      address,
+      variableName,
+      indices
+    );
+  }
+
+  /**
+   * getSmartContracts
+   */
+  public getSmartContracts(addr: string) {
+    assert(Boolean(addr), `addr ${ErrorMessages.RequiredParam}`);
+
+    const address = CryptoUtils.toHex(CryptoUtils.normaliseAddress(addr));
+
+    return this.#provider.send(RPCMethod.GetSmartContracts, address);
+  }
+
+  /**
+   * getContractAddressFromTransactionID
+   */
+  public getContractAddressFromTransactionID(hash: string) {
+    assert(Boolean(hash), `hash ${ErrorMessages.RequiredParam}`);
+
+    const fixedhash = CryptoUtils.toHex(hash);
+
+    return this.#provider.send(RPCMethod.GetContractAddressFromTransactionID, fixedhash);
+  }
+
+  public getTransactionStatus(hash: string) {
+    assert(Boolean(hash), `hash ${ErrorMessages.RequiredParam}`);
+
+    const fixedhash = CryptoUtils.toHex(hash);
+
+    return this.#provider.send(RPCMethod.GetTransactionStatus, fixedhash);
+  }
+
+  public getStateProof(addr: string, variableHash: string, txBlock: number) {
+    assert(Boolean(addr), `addr ${ErrorMessages.RequiredParam}`);
+    assert(Boolean(variableHash), `variableHash ${ErrorMessages.RequiredParam}`);
+    assert(!isNaN(txBlock), `txBlock ${ErrorMessages.ShouldBeNumber}`);
+
+    const fixedhash = CryptoUtils.toHex(variableHash);
+    const address = CryptoUtils.toHex(CryptoUtils.normaliseAddress(addr));
+
+    return this.#provider.send(
+      RPCMethod.GetStateProof,
+      address,
+      fixedhash,
+      [String(txBlock)]
+    );
+  }
+
+  public getNetworkId() {
+    return this.#provider.send(RPCMethod.GetNetworkId);
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/stream/stream-keys.ts`:
+
+```ts
+const app = 'zil-pay';
+
+export const MTypeTabContent = {
+  CONTENT: `@/${app}/content-script`,
+  INJECTED: `@/${app}/injected-script`
+};
+
+export const MTypeTab = {
+  GET_WALLET_DATA: `@/${app}/injected-get-wallet-data`,
+  ADDRESS_CHANGED: `@/${app}/address-changed`,
+  NETWORK_CHANGED: `@/${app}/network-changed`,
+  LOCK_STAUS: `@/${app}/lack-status-updated`,
+
+  CONTENT_PROXY_MEHTOD: `@/${app}/request-through-content`,
+  CONTENT_PROXY_RESULT: `@/${app}/response-from-content`,
+
+  CALL_TO_SIGN_TX: `@/${app}/request-to-sign-tx`,
+  TX_RESULT: `@/${app}/response-tx-result`,
+
+  SIGN_MESSAGE: `@/${app}/request-to-sign-message`,
+  SING_MESSAGE_RES: `@/${app}/response-sign-message`,
+
+  NEW_BLOCK: `@/${app}/new-block-created`,
+
+  ADD_ENCRYPTION: `@/${app}/request-add-encryption`,
+  RES_ENCRYPTION: `@/${app}/response-encryption`,
+  ADD_DECRYPTION: `@/${app}/add-decryption`,
+  RES_DECRYPTION: `@/${app}/response-decryption`,
+
+  CONNECT_APP: `@/${app}/request-to-connect-dapp`,
+  RESPONSE_TO_DAPP: `@/${app}/response-dapp-connect`,
+  DISCONNECT_APP: `@/${app}/request-to-disconnect-dapp`
+};
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/stream/secure-message.ts`:
+
+```ts
+import type { ReqBody } from 'types';
+import type { TabStream } from './tab-stream';
+
+/**
+ * Can send encrypted msg.
+ */
+ export class ContentMessage {
+  private readonly _body: ReqBody;
+
+  public get type() {
+    return this._body.type;
+  }
+
+  public get payload() {
+    return this._body.payload;
+  }
+
+  constructor(msg: ReqBody) {
+    this._body = msg;
+  }
+
+  /**
+   * Method for send message.
+   */
+  public send(stream: TabStream, recipient: string) {
+    const seralized = JSON.stringify(this._body);
+    const deserialized = JSON.parse(seralized);
+
+    stream.send(deserialized, recipient);
+  }
+
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/stream/tab-stream.ts`:
+
+```ts
+import type { ReqBody } from 'types';
+
+import { MTypeTabContent } from './stream-keys';
+
+
+const { document } = globalThis;
+
+/**
+ * Used for communication between a web page and an extension's content script.
+ */
+export class TabStream {
+
+  readonly #eventName: string;
+
+  /**
+   * Creates a new TabStream.
+   * @param {String} eventName - Event type.
+   */
+  constructor(eventName: string) {
+    this.#eventName = eventName
+  }
+
+  /**
+   * Message listener that returns decrypted messages when synced
+   */
+  public listen(cb: (payload: ReqBody) => void) {
+    document.addEventListener(this.#eventName, (event) => {
+      const detail = (event as any)['detail'];
+
+      if (detail) {
+        cb(JSON.parse(detail));
+      }
+    });
+  }
+
+  /**
+   * Message sender which encrypts messages and adds the sender.
+   * @param data - The payload to send.
+   * @param to - The stream to send messages to.
+   */
+  public send(data: ReqBody, to: string) {
+    data.from = this.#eventName;
+
+    if (Object.values(MTypeTabContent).includes(to)) {
+      this.#dispatch(JSON.stringify(data), to);
+    }
+  }
+
+  #dispatch(data: string, to: string) {
+    document.dispatchEvent(this.#getEvent(data, to));
+  }
+
+  /**
+   * Helper methods for building and sending events.
+   */
+  #getEventInit(detail: string) {
+    return {
+      detail
+    };
+  }
+
+  /**
+ * No modifly data
+ * @param encryptedData - No modifly data
+ * @param to - Event name.
+ */
+  #getEvent(detail: string, to: string) {
+    return new CustomEvent(to, this.#getEventInit(detail));
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/stream/subject.ts`:
+
+```ts
+import type { ReqBody } from "types";
+
+type Listener = (...args: ReqBody[]) => void;
+
+export class Subject {
+  readonly #events: Listener[] = [];
+
+  public on(listener: Listener): () => void {
+    this.#events.push(listener);
+    return () => this.removeListener(listener);
+  }
+
+  public removeListener(listener: Listener): void {
+    const idx: number = this.#events.indexOf(listener);
+    if(idx > -1) this.#events.splice(idx, 1);
+  }
+
+  public removeAllListeners(): void {
+    this.#events.splice(0, this.#events.length);
+  }
+
+  public emit(...args: ReqBody[]): void {
+    this.#events.forEach(listener => listener.apply(this, args));
+  }
+
+  public once(listener: Listener): void {
+    const remove: (() => void) = this.on((...args: ReqBody[]) => {
+      remove();
+      listener.apply(this, args);
+    });
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/stream/index.ts`:
+
+```ts
+export * from './subject';
+export * from './tab-stream';
+export * from './stream-keys';
+export * from './secure-message';
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/zilpay.ts`:
+
+```ts
+import type { TabStream } from './stream/tab-stream';
+import type { Subject } from './stream/subject';
+
+import { ZilliqaUtils } from './crypto/zilliqa-utils';
+import { HTTPProvider } from './provider';
+import { CryptoUtils } from './crypto/utils';
+import { Blockchain } from './blockchain';
+import { Wallet } from './wallet';
+import { TransactionFactory } from './transaction';
+import { ContractControl } from './contract';
+
+export class ZilPay {
+  public utils = ZilliqaUtils;
+  public crypto = CryptoUtils;
+
+  public provider: HTTPProvider;
+  public blockchain: Blockchain;
+  public wallet: Wallet;
+  public transactions: TransactionFactory;
+  public contracts: ContractControl;
+
+  constructor(stream: TabStream, subject: Subject) {
+    this.provider = new HTTPProvider(stream, subject);
+    this.wallet = new Wallet(stream, subject);
+
+    this.blockchain = new Blockchain(this.provider, this.wallet);
+    this.transactions = new TransactionFactory(this.provider, this.wallet);
+    this.contracts = new ContractControl(this.transactions);
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/assert.ts`:
+
+```ts
+export default function assert(expressions: boolean, msg: string) {
+  if (!expressions) {
+    throw new Error(msg);
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/favicon.ts`:
+
+```ts
+export function getFavicon() {
+  let ref = globalThis.document.querySelector<HTMLLinkElement>('link[rel*=\'icon\']');
+
+  if (!ref) {
+    throw new Error('website favicon is required');
+  }
+
+  return ref.href;
+}
+
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/transaction.ts`:
+
+```ts
+import type { DataParams, TransactionParams, TransitionReceipt } from 'types';
+import type { HTTPProvider } from './provider';
+import type { Wallet } from './wallet';
+
+import assert from './assert';
+import BN from 'bn.js';
+import Long from 'long';
+import { Validator, CryptoUtils } from './crypto';
+import { Gas } from 'config/gas';
+import { TypeOf } from './type-checker';
+import { ErrorMessages } from 'config/errors';
+
+export class Transaction {
+  public version?: number;
+  public toAddr: string;
+  public nonce: number;
+  public amount: BN;
+  public code: string;
+  public data: DataParams | null;
+  public signature?: string;
+  public ContractAddress?: string;
+  public ID?: string;
+  public from?: string;
+  public Info?: string;
+  public pubKey: string;
+  public gasPrice: BN;
+  public gasLimit: Long;
+  public priority: boolean;
+  public receipt?: TransitionReceipt;
+
+  public epoch?: string;
+  public cumulativeGas?: string;
+  public success?: boolean;
+
+  public get payload() {
+    const address = CryptoUtils.fromBech32Address(this.toAddr);
+    const asStr = JSON.stringify({
+      amount: String(this.amount),
+      gasPrice: String(this.gasPrice),
+      gasLimit: String(this.gasLimit),
+      code: this.code,
+      data: this.data ? JSON.stringify(this.data) : '',
+      nonce: this.nonce,
+      priority: this.priority,
+      toAddr: CryptoUtils.toHex(address),
+      version: this.version,
+      ContractAddress: this.ContractAddress,
+      Info: this.Info,
+      signature: this.signature
+    });
+
+    return JSON.parse(asStr);
+  }
+
+  public get txParams() {
+    return this.payload;
+  }
+
+  /**
+   * @deprecated
+   */
+  public get TranID() {
+    console.warn('TranID is deprecated and will be removed.');
+    return this.ID;
+  }
+
+  public get exceptions() {
+    if (!this.receipt || !this.receipt.exceptions) {
+      return [];
+    }
+
+    return this.receipt.exceptions;
+  }
+
+  public get errors() {
+    if (!this.receipt || !this.receipt.errors) {
+      return [];
+    }
+
+    return this.receipt.errors;
+  }
+
+  public get eventLogs() {
+    if (!this.receipt || !this.receipt.event_logs) {
+      return []
+    }
+
+    return this.receipt.event_logs
+  }
+
+  constructor(params: TransactionParams, priority = false) {
+    assert(Boolean(params.toAddr), `toAddr ${ErrorMessages.RequiredParam}`);
+
+    this.version = params.version;
+    this.toAddr = String(params.toAddr);
+
+    this.nonce = Number(params.nonce || 0);
+    this.amount = new BN(params.amount || 0);
+    this.code = params.code || '';
+    this.signature = params.signature;
+    this.ID = params.hash;
+    this.from = params.from || params.senderAddress;
+    this.Info = params.Info;
+    this.pubKey = params.pubKey;
+
+    this.gasPrice = new BN(params.gasPrice);
+    this.gasLimit = Long.fromNumber(Number(params.gasLimit || Gas.gasLimit));
+
+    this.priority = params.priority ? params.priority : priority;
+    this.receipt = params.receipt;
+
+    if (Validator.isAddress(this.toAddr)) {
+      this.toAddr = CryptoUtils.toChecksumAddress(this.toAddr);
+      this.toAddr = CryptoUtils.toBech32Address(this.toAddr);
+    }
+
+    try {
+      this.from = CryptoUtils.toBech32Address(
+        String(this.from)
+      );
+    } catch {
+      ///
+    }
+
+    try {
+      this.ContractAddress = CryptoUtils.toChecksumAddress(
+        String(params.ContractAddress)
+      );
+    } catch {
+      ///
+    }
+
+    if (params.data && TypeOf.isString(params.data)) {
+      this.data = JSON.parse(params.data);
+    } else {
+      this.data = null;
+    }
+
+    if (this.receipt) {
+      this.epoch = this.receipt.epoch_num;
+      this.cumulativeGas = this.receipt.cumulative_gas;
+      this.success = this.receipt.success;
+    }
+
+    if (this.data && Array.isArray(this.data)) {
+      this.data.params = this.data.map((arg, index) => {
+        try {
+          if (arg && arg.type === 'ByStr20' && arg.value && Validator.isBech32(arg.value)) {
+            arg.value = CryptoUtils.fromBech32Address(String(arg.value));
+          }
+
+          if (arg && arg.type === 'List (ByStr20)' && Array.isArray(arg.value)) {
+            arg.value = arg.value.map((address: string) => {
+              if (!Validator.isBech32(address)) {
+                return address;
+              }
+
+              address = CryptoUtils.fromBech32Address(String(address));
+
+              return address;
+            })
+          }
+        } catch (err) {
+          throw new Error(`${(err as Error).message} in param ${index}, type: ${arg.type}, value: ${arg.value}`);
+        }
+
+        return arg;
+      });
+    }
+  }
+}
+
+export class TransactionFactory {
+  public readonly provider: HTTPProvider;
+  public readonly wallet: Wallet;
+  public Transaction = Transaction;
+
+  constructor(provider: HTTPProvider, wallet: Wallet) {
+    this.provider = provider;
+    this.wallet = wallet;
+  }
+
+  new(params: TransactionParams, priority = false) {
+    return new Transaction(params, priority);
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/index.ts`:
+
+```ts
+
+import { Handler } from './handler';
+import { ZilPay } from './zilpay';
+
+export const handler = Object.freeze(new Handler());
+export const zilPay = Object.freeze(new ZilPay(handler.stream, handler.subject));
+
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/provider.ts`:
+
+```ts
+import type { TabStream } from './stream/tab-stream';
+import type { Params } from 'types';
+import type { Subject } from './stream/subject';
+
+import { uuidv4 } from 'lib/crypto/uuid';
+import { MTypeTab, MTypeTabContent } from './stream/stream-keys';
+import { ContentMessage } from './stream/secure-message';
+import { RPCMethod } from 'config/methods';
+import { ErrorMessages } from 'config/errors';
+
+export type Response = {
+  error?: unknown,
+  result?: unknown;
+}
+
+export class HTTPProvider {
+  #stream: TabStream;
+  #subject: Subject;
+
+  public RPCMethod = RPCMethod;
+  public middleware = {
+    request: {
+      use() { }
+    },
+    response: {
+      use() { }
+    }
+  };
+
+  constructor(stream: TabStream, subject: Subject) {
+    this.#stream = stream;
+    this.#subject = subject;
+  }
+
+  public send(method: string, ...params: Params): Promise<Response> {
+    const type = MTypeTab.CONTENT_PROXY_MEHTOD;
+    const recipient = MTypeTabContent.CONTENT;
+    const uuid = uuidv4();
+    let sub: () => void;
+
+    // Send to content.js
+    new ContentMessage({
+      type,
+      payload: {
+        params,
+        method,
+        uuid
+      }
+    }).send(this.#stream, recipient);
+
+    const fulfilled: Promise<Response> = new Promise((resolve, reject) => {
+      sub = this.#subject.on((msg) => {
+        if (msg.type !== MTypeTab.CONTENT_PROXY_RESULT) return;
+        if (!msg.payload || !msg.payload.uuid) return;
+        if (msg.payload.uuid !== uuid) return;
+
+        if (msg.payload && msg.payload.reject) {
+          sub();
+          return reject(new Error(msg.payload.reject));
+        }
+
+        delete msg.payload.uuid;
+        sub();
+        return resolve(msg.payload.resolve as Response);
+      });
+    });
+    const timeout = new Promise((_, reject) => {
+      setTimeout(() => {
+        if (sub) sub();
+        reject(new Error(`${method} ${ErrorMessages.TimeOut}`));
+      }, 5000);
+    });
+
+    return Promise.race([fulfilled, timeout]) as Promise<Response>;
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/type-checker.ts`:
+
+```ts
+type Arg = string | Array<string | number | null | undefined | unknown> | unknown | null | undefined | object | number;
+
+export const TypeOf = Object.freeze({
+
+  isArray(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object Array]';
+  },
+
+  isObject(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object Object]';
+  },
+
+  isNumber(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object Number]'
+      && !isNaN(Number(argument));
+  },
+
+  isInt(argument: Arg) {
+    try {
+      return Boolean(BigInt(String(argument)));
+    } catch {
+      return false;
+    }
+  },
+
+  isError(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object Error]';
+  },
+
+  isString(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object String]';
+  },
+
+  isBoolean(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object Boolean]';
+  },
+
+  isNull(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object Null]';
+  },
+
+  isUndefined(argument: Arg) {
+    return Object.prototype.toString.call(argument) === '[object Undefined]';
+  },
+
+  isEmptyObject(argument: Arg) {
+    if (!this.isObject(argument)) {
+      return false;
+    } else {
+      return Object.getOwnPropertyNames(argument).length === 0;
+    }
+  },
+
+  isEmptyArray<T>(argument: Array<T>) {
+    if (!this.isArray(argument)) {
+      return false;
+    } else {
+      return argument.length === 0;
+    }
+  },
+
+  getType(argument: Arg): string {
+    if (Number.isNaN(argument)) {
+      return 'NaN';
+    }
+    return Object.prototype.toString.call(argument).split(' ')[1].slice(0, -1).toLowerCase();
+  }
+});
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/lib/handler.ts`:
+
+```ts
+import { MTypeTab, MTypeTabContent } from "./stream/stream-keys";
+import { TabStream } from "./stream/tab-stream";
+import { Subject } from './stream/subject';
+import { ContentMessage } from './stream/secure-message';
+
+export class Handler {
+  public readonly stream = new TabStream(MTypeTabContent.INJECTED);
+  public readonly subject = new Subject();
+
+  constructor() {
+    if (globalThis.window || globalThis.document) {
+      this.stream.listen((msg) => {
+        this.subject.emit(msg);
+      });
+    }
+  }
+
+  public initialized() {
+    const type = MTypeTab.GET_WALLET_DATA;
+    const recipient = MTypeTabContent.CONTENT;
+
+    new ContentMessage({
+      type,
+      payload: {}
+    }).send(this.stream, recipient);
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig to read more about this file */
+
+    /* Projects */
+    // "incremental": true,                              /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
+    // "composite": true,                                /* Enable constraints that allow a TypeScript project to be used with project references. */
+    // "tsBuildInfoFile": "./.tsbuildinfo",              /* Specify the path to .tsbuildinfo incremental compilation file. */
+    // "disableSourceOfProjectReferenceRedirect": true,  /* Disable preferring source files instead of declaration files when referencing composite projects. */
+    // "disableSolutionSearching": true,                 /* Opt a project out of multi-project reference checking when editing. */
+    // "disableReferencedProjectLoad": true,             /* Reduce the number of projects loaded automatically by TypeScript. */
+
+    /* Language and Environment */
+    "target": "es2020",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    // "lib": [],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+    // "jsx": "preserve",                                /* Specify what JSX code is generated. */
+    // "experimentalDecorators": true,                   /* Enable experimental support for TC39 stage 2 draft decorators. */
+    // "emitDecoratorMetadata": true,                    /* Emit design-type metadata for decorated declarations in source files. */
+    // "jsxFactory": "",                                 /* Specify the JSX factory function used when targeting React JSX emit, e.g. 'React.createElement' or 'h'. */
+    // "jsxFragmentFactory": "",                         /* Specify the JSX Fragment reference used for fragments when targeting React JSX emit e.g. 'React.Fragment' or 'Fragment'. */
+    // "jsxImportSource": "",                            /* Specify module specifier used to import the JSX factory functions when using 'jsx: react-jsx*'. */
+    // "reactNamespace": "",                             /* Specify the object invoked for 'createElement'. This only applies when targeting 'react' JSX emit. */
+    // "noLib": true,                                    /* Disable including any library files, including the default lib.d.ts. */
+    // "useDefineForClassFields": true,                  /* Emit ECMAScript-standard-compliant class fields. */
+    // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
+
+    /* Modules */
+    "module": "esnext",                                /* Specify what module code is generated. */
+    "rootDir": "./",                                  /* Specify the root folder within your source files. */
+    "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
+    "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */                                   /* Specify a set of entries that re-map imports to additional lookup locations. */
+    // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
+    "typeRoots": [
+      "types"
+    ],                                  /* Specify multiple folders that act like './node_modules/@types'. */
+    // "types": ["types"],                                      /* Specify type package names to be included without being referenced in a source file. */
+    // "allowUmdGlobalAccess": true,                     /* Allow accessing UMD globals from modules. */
+    // "moduleSuffixes": [],                             /* List of file name suffixes to search when resolving a module. */
+    // "resolveJsonModule": true,                        /* Enable importing .json files. */
+    // "noResolve": true,                                /* Disallow 'import's, 'require's or '<reference>'s from expanding the number of files TypeScript should add to a project. */
+
+    /* JavaScript Support */
+    // "allowJs": true,                                  /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */
+    // "checkJs": true,                                  /* Enable error reporting in type-checked JavaScript files. */
+    // "maxNodeModuleJsDepth": 1,                        /* Specify the maximum folder depth used for checking JavaScript files from 'node_modules'. Only applicable with 'allowJs'. */
+
+    /* Emit */
+    "declaration": true,                              /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+    "declarationMap": true,                           /* Create sourcemaps for d.ts files. */
+    "emitDeclarationOnly": true,                      /* Only output d.ts files and not JavaScript files. */
+    // "sourceMap": true,                                /* Create source map files for emitted JavaScript files. */
+    // "outFile": "./dist",                                  /* Specify a file that bundles all outputs into one JavaScript file. If 'declaration' is true, also designates a file that bundles all .d.ts output. */
+    // "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */
+    // "removeComments": true,                           /* Disable emitting comments. */
+    // "noEmit": true,                                   /* Disable emitting files from a compilation. */
+    // "importHelpers": true,                            /* Allow importing helper functions from tslib once per project, instead of including them per-file. */
+    // "importsNotUsedAsValues": "remove",               /* Specify emit/checking behavior for imports that are only used for types. */
+    // "downlevelIteration": true,                       /* Emit more compliant, but verbose and less performant JavaScript for iteration. */
+    // "sourceRoot": "",                                 /* Specify the root path for debuggers to find the reference source code. */
+    // "mapRoot": "",                                    /* Specify the location where debugger should locate map files instead of generated locations. */
+    // "inlineSourceMap": true,                          /* Include sourcemap files inside the emitted JavaScript. */
+    // "inlineSources": true,                            /* Include source code in the sourcemaps inside the emitted JavaScript. */
+    // "emitBOM": true,                                  /* Emit a UTF-8 Byte Order Mark (BOM) in the beginning of output files. */
+    // "newLine": "crlf",                                /* Set the newline character for emitting files. */
+    // "stripInternal": true,                            /* Disable emitting declarations that have '@internal' in their JSDoc comments. */
+    // "noEmitHelpers": true,                            /* Disable generating custom helper functions like '__extends' in compiled output. */
+    // "noEmitOnError": true,                            /* Disable emitting files if any type checking errors are reported. */
+    // "preserveConstEnums": true,                       /* Disable erasing 'const enum' declarations in generated code. */
+    "declarationDir": "./dist",                           /* Specify the output directory for generated declaration files. */
+    // "preserveValueImports": true,                     /* Preserve unused imported values in the JavaScript output that would otherwise be removed. */
+
+    /* Interop Constraints */
+    // "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
+    // "allowSyntheticDefaultImports": true,             /* Allow 'import x from y' when a module doesn't have a default export. */
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+
+    /* Type Checking */
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    // "noImplicitAny": true,                            /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+    // "strictNullChecks": true,                         /* When type checking, take into account 'null' and 'undefined'. */
+    // "strictFunctionTypes": true,                      /* When assigning functions, check to ensure parameterss and the return values are subtype-compatible. */
+    // "strictBindCallApply": true,                      /* Check that the arguments for 'bind', 'call', and 'apply' methods match the original function. */
+    // "strictPropertyInitialization": true,             /* Check for class properties that are declared but not set in the constructor. */
+    // "noImplicitThis": true,                           /* Enable error reporting when 'this' is given the type 'any'. */
+    // "useUnknownInCatchVariables": true,               /* Default catch clause variables as 'unknown' instead of 'any'. */
+    // "alwaysStrict": true,                             /* Ensure 'use strict' is always emitted. */
+    // "noUnusedLocals": true,                           /* Enable error reporting when local variables aren't read. */
+    // "noUnusedparameterss": true,                       /* Raise an error when a function parameters isn't read. */
+    // "exactOptionalPropertyTypes": true,               /* Interpret optional property types as written, rather than adding 'undefined'. */
+    // "noImplicitReturns": true,                        /* Enable error reporting for codepaths that do not explicitly return in a function. */
+    // "noFallthroughCasesInSwitch": true,               /* Enable error reporting for fallthrough cases in switch statements. */
+    // "noUncheckedIndexedAccess": true,                 /* Add 'undefined' to a type when accessed using an index. */
+    // "noImplicitOverride": true,                       /* Ensure overriding members in derived classes are marked with an override modifier. */
+    // "noPropertyAccessFromIndexSignature": true,       /* Enforces using indexed accessors for keys declared using an indexed type. */
+    // "allowUnusedLabels": true,                        /* Disable error reporting for unused labels. */
+    // "allowUnreachableCode": true,                     /* Disable error reporting for unreachable code. */
+
+    /* Completeness */
+    // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
+    "skipLibCheck": false                                 /* Skip type checking all .d.ts files. */
+  }
+}
+
+```
+
+`/Users/rinat/projects/zilpay/zilpay-web3/index.ts`:
+
+```ts
+import { handler, zilPay } from './lib';
+
+export function initZilPayWeb3() {
+  if (!globalThis.window || !globalThis.document) {
+    console.warn('is not enablde in node');
+    return;
+  }
+
+  if (!(globalThis.window as any)['zilPay']) {
+    handler.initialized();
+    (globalThis.window as any)['zilPay'] = zilPay;
+  } else {
+    console.warn('use inject');
+  }
+}
+
+export * from './lib';
+
+
+```
