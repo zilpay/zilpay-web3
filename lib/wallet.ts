@@ -129,10 +129,10 @@ export class Wallet {
         const obs = this.#subject.on((msg) => {
           switch (msg.type) {
             case MTypeTab.GET_WALLET_DATA:
-              cb(msg.payload.netwrok);
+              cb(msg.payload.network);
               break;
             case MTypeTab.NETWORK_CHANGED:
-              cb(msg.payload.netwrok);
+              cb(msg.payload.network);
               break;
             default:
               break;
@@ -340,7 +340,7 @@ export class Wallet {
         case MTypeTab.GET_WALLET_DATA:
           this.#defaultAccount = msg.payload.account;
           this.#http = msg.payload.http;
-          this.#net = msg.payload.netwrok;
+          this.#net = msg.payload.network;
           this.#isConnect = msg.payload.isConnect;
           this.#isEnable = msg.payload.isEnable;
           break;
@@ -349,7 +349,7 @@ export class Wallet {
           this.#defaultAccount = msg.payload.account;
           break;
         case MTypeTab.NETWORK_CHANGED:
-          this.#net = msg.payload.netwrok;
+          this.#net = msg.payload.network;
           // TODO: rename to http.
           this.#http = msg.payload.node;
           break;
