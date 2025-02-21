@@ -2,24 +2,143 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZilPay Web3 Debugging</title>
   <link rel="icon" type="image/png" href="https://www.google.com/favicon.ico">
+  <style>
+    body {
+      background-color: #e6f0ff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+    }
+    h1 {
+      color: #0033cc;
+      font-size: 24px;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    button {
+      background-color: #0055ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0033cc;
+    }
+    pre {
+      background-color: #cce0ff;
+      color: #001a66;
+      padding: 10px;
+      border: 1px solid #0055ff;
+      border-radius: 5px;
+      font-size: 14px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    #errors {
+      background-color: #ffcccc;
+      color: #660000;
+      padding: 10px;
+      border: 1px solid #ff3333;
+      border-radius: 5px;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 20px; }
+      button { 
+        padding: 8px 15px; 
+        font-size: 14px; 
+        width: 100%; 
+      }
+      pre, #errors { font-size: 12px; }
+      .buttons { flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
-  <h1>ZilPay Web3 Simulator</h1>
-  <button onclick="connectWallet()">Connect Wallet</button>
-  <button onclick="signMessage()">Sign Message</button>
-  <button onclick="signTransaction()">Sign Transaction</button>
-  <pre id="output"></pre>
-  <script src="./dist/inpage.js"></script>
+  <div class="container">
+    <h1>ZilPay Web3 Simulator</h1>
+    <div class="buttons">
+      <button onclick="connectWallet()">Connect Wallet</button>
+      <button onclick="signMessage()">Sign Message</button>
+      <button onclick="signTransaction()">Sign Transaction</button>
+    </div>
+    <pre id="output"></pre>
+    <pre id="zilpay-state"></pre>
+    <pre id="errors"></pre>
+  </div>
   <script>
-    const zilPay = window.zilPay;
     const output = document.getElementById('output');
-    if (!zilPay) {
-      output.textContent = 'Error: zilPay is not initialized!';
-    } else {
-      output.textContent = 'zilPay is initialized successfully.\n';
+    const zilpayState = document.getElementById('zilpay-state');
+    const errors = document.getElementById('errors');
+    let zilPay;
+    const maxAttempts = 5;
+    let attempts = 0;
+
+    window.onload = function () {
+      output.textContent = 'Page loaded, starting zilPay injection attempts...\n';
+      tryInjectZilPay();
+    };
+
+    function tryInjectZilPay() {
+      attempts++;
+      if (attempts > maxAttempts) {
+        output.textContent += `Failed to inject zilPay after ${maxAttempts} attempts\n`;
+        showError('Injection failed after maximum attempts');
+        return;
+      }
+
+      output.textContent += `Attempt ${attempts} of ${maxAttempts}...\n`;
+      try {
+        injectZilPay();
+      } catch (err) {
+        showError(`Injection attempt ${attempts} failed: ${err.message}`);
+        setTimeout(tryInjectZilPay, 1000);
+      }
     }
+
+    function injectZilPay() {
+      if (window.zilPay) {
+        output.textContent += 'zilPay already exists\n';
+        zilPay = window.zilPay;
+        updateZilPayState();
+        return;
+      }
+
+      updateZilPayState();
+    }
+
+    function updateZilPayState() {
+      const state = {
+        isConnect: zilPay.wallet.isConnect,
+        isEnable: zilPay.wallet.isEnable,
+        defaultAccount: zilPay.wallet.defaultAccount,
+        version: zilPay.version
+      };
+      zilpayState.textContent = 'zilPay State:\n' + JSON.stringify(state, null, 2);
+    }
+
+    function showError(message) {
+      errors.style.display = 'block';
+      errors.textContent += `${new Date().toLocaleTimeString()} - ${message}\n`;
+    }
+
     window.addEventListener('message', (event) => {
       const msg = event.data;
       console.log('Received from ZilPay:', msg);
@@ -92,45 +211,75 @@
           console.warn('Unhandled message type:', msg.type);
       }
     });
+
     function sendResponse(response) {
       console.log('Sending response:', response);
       window.postMessage(response, '*');
     }
+
     function connectWallet() {
-      zilPay.wallet.connect()
-        .then((connected) => {
-          output.textContent = `Connected: ${connected}\nAccount: ${JSON.stringify(zilPay.wallet.defaultAccount, null, 2)}`;
-        })
-        .catch((err) => {
-          output.textContent = `Error: ${err.message}`;
-        });
+      if (!zilPay || !zilPay.wallet) {
+        showError('zilPay not initialized');
+        return;
+      }
+      try {
+        zilPay.wallet.connect()
+          .then((connected) => {
+            output.textContent = `Connected: ${connected}\nAccount: ${JSON.stringify(zilPay.wallet.defaultAccount, null, 2)}`;
+            updateZilPayState();
+          })
+          .catch((err) => {
+            showError(`Connect Wallet failed: ${err.message}`);
+          });
+      } catch (err) {
+        showError(`Connect Wallet error: ${err.message}`);
+      }
     }
+
     function signMessage() {
-      zilPay.wallet.sign('Hello, Zilliqa!')
-        .then((signed) => {
-          output.textContent = `Signed Message: ${JSON.stringify(signed, null, 2)}`;
-        })
-        .catch((err) => {
-          output.textContent = `Error: ${err.message}`;
-        });
+      if (!zilPay || !zilPay.wallet) {
+        showError('zilPay not initialized');
+        return;
+      }
+      try {
+        zilPay.wallet.sign('Hello, Zilliqa!')
+          .then((signed) => {
+            output.textContent = `Signed Message: ${JSON.stringify(signed, null, 2)}`;
+          })
+          .catch((err) => {
+            showError(`Sign Message failed: ${err.message}`);
+          });
+      } catch (err) {
+        showError(`Sign Message error: ${err.message}`);
+      }
     }
+
     function signTransaction() {
-      const tx = zilPay.transactions.new({
-        toAddr: 'zil1z5l...test',
-        amount: '1000000',
-        gasPrice: '2000',
-        gasLimit: '50',
-        nonce: 1,
-        pubKey: '0xpublickey123'
-      });
-      zilPay.wallet.sign(tx)
-        .then((signedTx) => {
-          output.textContent = `Signed Transaction: ${JSON.stringify(signedTx, null, 2)}`;
-        })
-        .catch((err) => {
-          output.textContent = `Error: ${err.message}`;
-        });
+      if (!zilPay || !zilPay.wallet) {
+        showError('zilPay not initialized');
+        return;
+      }
+      try {
+        const tx = {
+          toAddr: 'zil1z5l...test',
+          amount: '1000000',
+          gasPrice: '2000',
+          gasLimit: '50',
+          nonce: 1,
+          pubKey: '0xpublickey123'
+        };
+        zilPay.wallet.sign(tx)
+          .then((signedTx) => {
+            output.textContent = `Signed Transaction: ${JSON.stringify(signedTx, null, 2)}`;
+          })
+          .catch((err) => {
+            showError(`Sign Transaction failed: ${err.message}`);
+          });
+      } catch (err) {
+        showError(`Sign Transaction error: ${err.message}`);
+      }
     }
   </script>
+  <!-- <script src="./dist/inpage.js"></script> -->
 </body>
 </html>

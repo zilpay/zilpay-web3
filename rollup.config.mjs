@@ -12,7 +12,7 @@ export default [
       {
         dir: 'dist',
         name: 'web3',
-        format: production ? 'es' : 'umd',
+        format: 'iife',
         sourcemap: true
       },
       {

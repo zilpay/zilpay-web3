@@ -1,20 +1,11 @@
 import { handler, zilPay } from './lib';
 
-export function initZilPayWeb3() {
-  if (!globalThis.window || !globalThis.document) {
-    console.warn('is not enablde in node');
+(function () {
+  if (!globalThis.window || !globalThis.document || (globalThis.window as any)['zilPay']) {
+    console.warn('zilPay already exists or not in browser');
     return;
   }
-
-  if (!(globalThis.window as any)['zilPay']) {
-    handler.initialized();
-    (globalThis.window as any)['zilPay'] = zilPay;
-  } else {
-    console.warn('use inject');
-  }
-}
-
-export * from './lib';
-
-
-initZilPayWeb3();
+  handler.initialized();
+  (globalThis.window as any)['zilPay'] = zilPay;
+  console.log('zilPay injected:', (globalThis.window as any)['zilPay']);
+})();
