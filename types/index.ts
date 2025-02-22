@@ -4,6 +4,7 @@ export interface ReqBody {
   type: string;
   payload?: any;
   domain?: string;
+  uuid?: string;
 }
 
 export interface DataParams {

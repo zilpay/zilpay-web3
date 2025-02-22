@@ -37,13 +37,12 @@ export class HTTPProvider {
     const uuid = uuidv4();
     let sub: () => void;
 
-    // Send to content.js
     new ContentMessage({
       type,
+      uuid,
       payload: {
         params,
         method,
-        uuid
       }
     }).send(this.#stream);
 
@@ -51,14 +50,14 @@ export class HTTPProvider {
       sub = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.CONTENT_PROXY_RESULT) return;
         if (!msg.payload || !msg.payload.uuid) return;
-        if (msg.payload.uuid !== uuid) return;
+        if (msg.uuid !== uuid) return;
 
         if (msg.payload && msg.payload.reject) {
           sub();
           return reject(new Error(msg.payload.reject));
         }
 
-        delete msg.payload.uuid;
+        delete msg.uuid;
         sub();
         return resolve(msg.payload.resolve as Response);
       });
