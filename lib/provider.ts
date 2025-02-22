@@ -51,7 +51,7 @@ export class HTTPProvider {
     const fulfilled: Promise<Response> = new Promise((resolve, reject) => {
       sub = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.CONTENT_PROXY_RESULT) return;
-        if (!msg.payload || !msg.payload.uuid) return;
+        if (!msg.payload || !msg.uuid) return;
         if (msg.uuid !== uuid) return;
 
         if (msg.payload && msg.payload.reject) {
