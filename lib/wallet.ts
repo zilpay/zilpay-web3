@@ -214,19 +214,19 @@ export class Wallet {
     const title = window.document.title;
     const payload = {
       title,
-      uuid,
       icon
     };
 
     new ContentMessage({
       type,
+      uuid,
       payload
     }).send(this.#stream);
 
     return new Promise((resolve) => {
       const obs = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.RESPONSE_TO_DAPP) return;
-        if (msg.payload.uuid !== uuid) return;
+        if (msg.uuid !== uuid) return;
 
         this.#isConnect = Boolean(msg.payload.account);
         this.#defaultAccount = (msg.payload.account as InpageWallet) || null;
@@ -244,13 +244,13 @@ export class Wallet {
     const icon = getFavicon();
     const payload: InputCipherParams = {
       title,
-      uuid,
       icon,
       content
     };
 
     new ContentMessage({
       type,
+      uuid,
       payload
     }).send(this.#stream);
 
@@ -277,20 +277,20 @@ export class Wallet {
     const title = window.document.title;
     const payload: InputCipherParams = {
       title,
-      uuid,
       icon,
       content
     };
 
     new ContentMessage({
       type,
+      uuid,
       payload
     }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
       const obs = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.RES_DECRYPTION) return;
-        if (msg.payload.uuid !== uuid) return;
+        if (msg.uuid !== uuid) return;
 
         if (msg.payload && msg.payload.reject) {
           obs();
@@ -308,19 +308,19 @@ export class Wallet {
     const icon = getFavicon();
     const uuid = uuidv4();
     const payload = {
-      uuid,
       icon
     };
 
     new ContentMessage({
       type,
+      uuid,
       payload
     }).send(this.#stream);
 
     return new Promise((resolve) => {
       const obs = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.RESPONSE_TO_DAPP) return;
-        if (msg.payload.uuid !== uuid) return;
+        if (msg.uuid !== uuid) return;
 
         this.#isConnect = false;
         this.#defaultAccount = null;
@@ -366,20 +366,20 @@ export class Wallet {
     const title = window.document.title;
     const payload: MessageParams = {
       content: message,
-      uuid,
       title,
       icon
     };
 
     new ContentMessage({
       type,
+      uuid,
       payload
     }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
       const obs = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.SING_MESSAGE_RES) return;
-        if (msg.payload.uuid !== uuid) return;
+        if (msg.uuid !== uuid) return;
 
         if (msg.payload && msg.payload.reject) {
           obs();
@@ -398,7 +398,6 @@ export class Wallet {
     const icon = getFavicon();
     const payload = {
       ...tx.payload,
-      uuid,
       icon,
       title: window.document.title,
       nonce: undefined
@@ -407,13 +406,14 @@ export class Wallet {
     // Send transaction to content.js > background.js.
     new ContentMessage({
       type,
+      uuid,
       payload
     }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
       const obs = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.TX_RESULT) return;
-        if (msg.payload.uuid !== uuid) return;
+        if (msg.uuid !== uuid) return;
 
         if (msg.payload && msg.payload.reject) {
           obs();

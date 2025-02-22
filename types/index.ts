@@ -72,7 +72,6 @@ export interface TransitionReceipt {
 
 export interface MessageParams {
   content: string;
-  uuid: string;
   title: string;
   icon: string;
 };
@@ -129,7 +128,6 @@ export interface SignedMessage {
 
 export interface InputCipherParams {
   content: string;
-  uuid: string;
   title: string;
   icon: string;
 };
