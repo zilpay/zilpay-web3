@@ -41,6 +41,8 @@ export class HTTPProvider {
       type,
       uuid,
       payload: {
+        id: "1",
+        jsonrpc: "2.0",
         params,
         method,
       }
