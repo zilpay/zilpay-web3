@@ -1,6 +1,18 @@
 export type Params = TxParams[] | string[] | number[] | (string | string[] | number[])[];
 
-export interface ReqBody {
+export interface MetaData {
+  description?: string;
+  title?: string;
+  colors?: {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    text?: string;
+  };
+  icon?: string,
+}
+
+export interface ReqBody extends MetaData {
   type: string;
   payload?: any;
   domain?: string;
@@ -73,7 +85,6 @@ export interface TransitionReceipt {
 export interface MessageParams {
   content: string;
   title: string;
-  icon: string;
 };
 
 export interface InpageWallet {
@@ -129,5 +140,5 @@ export interface SignedMessage {
 export interface InputCipherParams {
   content: string;
   title: string;
-  icon: string;
 };
+

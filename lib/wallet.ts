@@ -13,8 +13,8 @@ import { TypeOf } from "./type-checker";
 import { ContentMessage } from "./stream/secure-message";
 import { CryptoUtils } from "./crypto";
 import { ErrorMessages } from "config/errors";
-import { getFavicon } from "./favicon";
 import { FlutterStream } from "./stream";
+import { getMetaDataFromTags } from "./meta";
 
 export class Wallet {
   #stream: FlutterStream;
@@ -210,17 +210,14 @@ export class Wallet {
   public async connect(): Promise<boolean> {
     const type = MTypeTab.CONNECT_APP;
     const uuid = uuidv4();
-    const icon = getFavicon();
-    const title = window.document.title;
-    const payload = {
-      title,
-      icon
-    };
+    const payload = {};
+    const meta = getMetaDataFromTags();
 
     new ContentMessage({
       type,
       uuid,
-      payload
+      payload,
+      ...meta,
     }).send(this.#stream);
 
     return new Promise((resolve) => {
@@ -241,17 +238,17 @@ export class Wallet {
     const type = MTypeTab.ADD_ENCRYPTION;
     const uuid = uuidv4();
     const title = window.document.title;
-    const icon = getFavicon();
     const payload: InputCipherParams = {
       title,
-      icon,
       content
     };
+    const meta = getMetaDataFromTags();
 
     new ContentMessage({
       type,
       uuid,
-      payload
+      payload,
+      ...meta,
     }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
@@ -273,18 +270,18 @@ export class Wallet {
   public async decrypt(content: string): Promise<object> {
     const type = MTypeTab.ADD_DECRYPTION;
     const uuid = uuidv4();
-    const icon = getFavicon();
     const title = window.document.title;
     const payload: InputCipherParams = {
       title,
-      icon,
       content
     };
+    const meta = getMetaDataFromTags();
 
     new ContentMessage({
       type,
       uuid,
-      payload
+      payload,
+      ...meta,
     }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
@@ -305,16 +302,15 @@ export class Wallet {
 
   public async disconnect() {
     const type = MTypeTab.DISCONNECT_APP;
-    const icon = getFavicon();
     const uuid = uuidv4();
-    const payload = {
-      icon
-    };
+    const payload = {};
+    const meta = getMetaDataFromTags();
 
     new ContentMessage({
       type,
       uuid,
-      payload
+      payload,
+      ...meta,
     }).send(this.#stream);
 
     return new Promise((resolve) => {
@@ -362,18 +358,18 @@ export class Wallet {
   #signMessage(message: string): Promise<SignedMessage> {
     const type = MTypeTab.SIGN_MESSAGE;
     const uuid = uuidv4();
-    const icon = getFavicon();
     const title = window.document.title;
     const payload: MessageParams = {
       content: message,
       title,
-      icon
     };
+    const meta = getMetaDataFromTags();
 
     new ContentMessage({
       type,
       uuid,
-      payload
+      payload,
+      ...meta,
     }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
@@ -395,19 +391,18 @@ export class Wallet {
   #signTransaction(tx: Transaction): Promise<TxParams> {
     const type = MTypeTab.CALL_TO_SIGN_TX;
     const uuid = uuidv4();
-    const icon = getFavicon();
     const payload = {
       ...tx.payload,
-      icon,
       title: window.document.title,
       nonce: undefined
     };
+    const meta = getMetaDataFromTags();
 
-    // Send transaction to content.js > background.js.
     new ContentMessage({
       type,
       uuid,
-      payload
+      payload,
+      ...meta,
     }).send(this.#stream);
 
     return new Promise((resolve, reject) => {
