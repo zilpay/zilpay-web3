@@ -15,12 +15,12 @@ export class FlutterStream {
   }
 
   public send(data: ReqBody) {
-    (window as any).FlutterWebView?.postMessage(JSON.stringify(data));
+    (window as any).ZilPayLegacy?.postMessage(JSON.stringify(data));
   }
 
   #setupListener() {
-    if (!(window as any).FlutterWebView) {
-      (window as any).FlutterWebView = {
+    if (!(window as any).ZilPayLegacy) {
+      (window as any).ZilPayLegacy = {
         postMessage: (msg: string) => {
           window.postMessage(JSON.parse(msg), '*');
         }
