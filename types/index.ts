@@ -1,3 +1,14 @@
+declare global {
+  interface Window {
+    ZilPayLegacy?: {
+      postMessage: (msg: string) => void;
+    };
+    flutter_inappwebview?: {
+      callHandler: (handlerName: string, ...args: any[]) => Promise<any>;
+    };
+  }
+}
+
 export type Params = TxParams[] | string[] | number[] | (string | string[] | number[])[];
 
 export interface MetaData {

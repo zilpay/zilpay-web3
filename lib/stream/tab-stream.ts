@@ -15,7 +15,20 @@ export class FlutterStream {
   }
 
   public send(data: ReqBody) {
-    (window as any).ZilPayLegacy?.postMessage(JSON.stringify(data));
+    if (typeof window !== 'undefined' && window.flutter_inappwebview?.callHandler) {
+      window.flutter_inappwebview.callHandler('ZilPayLegacy', JSON.stringify(data))
+        .catch(() => {
+          if (window.ZilPayLegacy) {
+            window.ZilPayLegacy.postMessage(JSON.stringify(data));
+          } else {
+            window.postMessage(data, '*');
+          }
+        });
+    } else if (window.ZilPayLegacy) {
+      window.ZilPayLegacy.postMessage(JSON.stringify(data));
+    } else {
+      window.postMessage(data, '*');
+    }
   }
 
   #setupListener() {
@@ -26,5 +39,16 @@ export class FlutterStream {
         }
       };
     }
+  }
+}
+
+declare global {
+  interface Window {
+    ZilPayLegacy?: {
+      postMessage: (msg: string) => void;
+    };
+    flutter_inappwebview?: {
+      callHandler: (handlerName: string, ...args: any[]) => Promise<any>;
+    };
   }
 }
