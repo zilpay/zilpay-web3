@@ -104,6 +104,14 @@ export class Wallet {
   public observableBlock() {
     assert(this.isEnable, ErrorMessages.Disabled);
     assert(this.isConnect, ErrorMessages.Connect);
+    const type = MTypeTab.WATCH_BLOCK;
+    const meta = getMetaDataFromTags();
+
+    new ContentMessage({
+      type,
+      payload: {},
+      ...meta,
+    }).send(this.#stream);
 
     return {
       subscribe: (cb: (block: TxBlock) => void) => {
