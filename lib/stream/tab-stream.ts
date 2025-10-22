@@ -1,17 +1,25 @@
 import { ReqBody } from "types";
+import { MTypeTabContent } from "./stream-keys";
+
 
 export class FlutterStream {
-  constructor() {
-    this.#setupListener();
-  }
-
   public listen(cb: (payload: ReqBody) => void) {
-    window.addEventListener('message', (event) => {
-      const data = event.data;
-      if (data) {
-        cb(data);
-      }
-    });
+    if (window.flutter_inappwebview) {
+      window.addEventListener('message', (event) => {
+        const data = event.data;
+        if (data) {
+          cb(data);
+        }
+      });
+    } else {
+       document.addEventListener(MTypeTabContent.INJECTED, (event) => {
+        const detail = event as any;
+
+        if (detail) {
+          cb(JSON.parse(detail));
+        }
+      }); 
+    }
   }
 
   public send(data: ReqBody) {
@@ -24,21 +32,23 @@ export class FlutterStream {
             window.postMessage(data, '*');
           }
         });
-    } else if (window.ZilPayLegacy) {
-      window.ZilPayLegacy.postMessage(JSON.stringify(data));
     } else {
-      window.postMessage(data, '*');
+      this.#dispatch(JSON.stringify(data), MTypeTabContent.CONTENT);
     }
   }
 
-  #setupListener() {
-    if (!(window as any).ZilPayLegacy) {
-      (window as any).ZilPayLegacy = {
-        postMessage: (msg: string) => {
-          window.postMessage(JSON.parse(msg), '*');
-        }
-      };
-    }
+  #dispatch(data: string, to: string) {
+    document.dispatchEvent(this.#getEvent(data, to));
+  }
+
+  #getEventInit(detail: string) {
+    return {
+      detail
+    };
+  }
+
+  #getEvent(detail: string, to: string) {
+    return new CustomEvent(to, this.#getEventInit(detail));
   }
 }
 

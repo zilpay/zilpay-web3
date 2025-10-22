@@ -1,4 +1,9 @@
-const app = 'zil-pay';
+const app = 'BearBy';
+
+export const MTypeTabContent = {
+  CONTENT: `@/${app}/content-script`,
+  INJECTED: `@/${app}/injected-script`
+};
 
 export const MTypeTab = {
   GET_WALLET_DATA: `@/${app}/injected-get-wallet-data`,
