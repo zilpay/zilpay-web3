@@ -13,7 +13,7 @@ export class FlutterStream {
       });
     } else {
        document.addEventListener(MTypeTabContent.INJECTED, (event) => {
-        const detail = event as any;
+        const detail = (event as any).detail;
 
         if (detail) {
           cb(JSON.parse(detail));

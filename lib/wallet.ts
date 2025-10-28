@@ -231,7 +231,8 @@ export class Wallet {
     return new Promise((resolve) => {
       const obs = this.#subject.on((msg) => {
         if (msg.type !== MTypeTab.RESPONSE_TO_DAPP) return;
-        if (msg.uuid !== uuid) return;
+        if (!msg.payload) return;
+        if (msg.payload.uuid !== uuid) return;
 
         this.#isConnect = Boolean(msg.payload.account);
         this.#defaultAccount = (msg.payload.account as InpageWallet) || null;

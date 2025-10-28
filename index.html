@@ -3,608 +3,120 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZilPay Web3 Testing</title>
-  <link rel="icon" type="image/png" href="https://zilpay.io/favicon.ico">
-  <script src="/dist/index.js"></script>
+  <title>ZilPay Web3 Debugging</title>
+  <link rel="icon" type="image/png" href="https://www.google.com/favicon.ico">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
-      color: #333;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      color: white;
-    }
-
-    .header h1 {
-      font-size: 42px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .header p {
-      font-size: 18px;
-      opacity: 0.9;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      animation: fadeIn 0.5s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-
-    .status-badge.connected {
-      background: #10b981;
-      color: white;
-    }
-
-    .status-badge.disconnected {
-      background: #ef4444;
-      color: white;
-    }
-
-    .status-badge.loading {
-      background: #f59e0b;
-      color: white;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.6;
-      }
-    }
-
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 15px 25px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    button:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    .output-section {
-      margin-top: 20px;
-    }
-
-    .output-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: #374151;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .output-title::before {
-      content: '';
-      width: 4px;
-      height: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 2px;
-    }
-
-    pre {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 20px;
-      font-size: 13px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      line-height: 1.6;
-      font-family: 'Courier New', monospace;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .info-box {
-      background: #dbeafe;
-      border-left: 4px solid #3b82f6;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .info-box code {
-      background: #bfdbfe;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-    }
-
-    .success-box {
-      background: #d1fae5;
-      border-left: 4px solid #10b981;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .error-box {
-      background: #fee2e2;
-      border-left: 4px solid #ef4444;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .account-info {
-      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 20px;
-    }
-
-    .account-info-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .account-info-item:last-child {
-      border-bottom: none;
-    }
-
-    .account-info-label {
-      font-weight: 600;
-      color: #6b7280;
-    }
-
-    .account-info-value {
-      font-family: 'Courier New', monospace;
-      color: #374151;
-      word-break: break-all;
-    }
-
-    @media (max-width: 768px) {
-      .header h1 {
-        font-size: 32px;
-      }
-
-      .buttons {
-        grid-template-columns: 1fr;
-      }
-
-      .card {
-        padding: 20px;
-      }
-
-      pre {
-        font-size: 11px;
-        padding: 15px;
-      }
-    }
-
-    .loading-spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    body { background-color: #e6f0ff; font-family: Arial, sans-serif; margin: 0; padding: 10px; }
+    h1 { color: #0033cc; font-size: 24px; text-align: center; }
+    .container { max-width: 600px; margin: 0 auto; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    button { background-color: #0055ff; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; border-radius: 5px; }
+    button:hover { background-color: #0033cc; }
+    pre { background-color: #cce0ff; color: #001a66; padding: 10px; border: 1px solid #0055ff; border-radius: 5px; font-size: 14px; overflow-x: auto; white-space: pre-wrap; }
+    #errors { background-color: #ffcccc; color: #660000; padding: 10px; border: 1px solid #ff3333; border-radius: 5px; font-size: 14px; margin-top: 10px; display: none; }
+    #blockchain-info { background-color: #e6ffe6; color: #006600; padding: 10px; border: 1px solid #00cc00; border-radius: 5px; font-size: 14px; margin-top: 10px; }
+    @media (max-width: 480px) {
+      h1 { font-size: 20px; }
+      button { padding: 8px 15px; font-size: 14px; width: 100%; }
+      pre, #errors, #blockchain-info { font-size: 12px; }
+      .buttons { flex-direction: column; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>ZilPay Web3 Tester</h1>
-      <p>Test your ZilPay browser extension integration</p>
+    <h1>ZilPay Web3 Simulator</h1>
+    <div class="buttons">
+      <button onclick="connectWallet()">Connect Wallet</button>
+      <button onclick="signMessage()">Sign Message</button>
+      <button onclick="signTransaction()">Sign Transaction</button>
+      <button onclick="getBlockchainInfo()">Get Blockchain Info</button>
     </div>
-
-    <div class="card">
-      <div id="status-container">
-        <span class="status-badge loading" id="status-badge">
-          <span class="loading-spinner"></span> Initializing...
-        </span>
-      </div>
-
-      <div class="info-box">
-        <strong>ℹ️ Info:</strong> This page loads ZilPay from <code>dist/inpage.js</code>. 
-        Make sure your extension is installed and the content script is injecting properly.
-      </div>
-
-      <div class="success-box" id="success-box"></div>
-      <div class="error-box" id="error-box"></div>
-
-      <div class="buttons">
-        <button onclick="connectWallet()" id="connect-btn">
-          🔗 Connect Wallet
-        </button>
-        <button onclick="getWalletData()" id="wallet-data-btn" disabled>
-          📊 Get Wallet Data
-        </button>
-        <button onclick="signMessage()" id="sign-msg-btn" disabled>
-          ✍️ Sign Message
-        </button>
-        <button onclick="signTransaction()" id="sign-tx-btn" disabled>
-          📝 Sign Transaction
-        </button>
-        <button onclick="getBlockchainInfo()" id="blockchain-btn" disabled>
-          ⛓️ Blockchain Info
-        </button>
-        <button onclick="disconnect()" id="disconnect-btn" disabled>
-          🔌 Disconnect
-        </button>
-      </div>
-
-      <div id="account-info" class="account-info" style="display: none;">
-        <div class="output-title">👤 Account Information</div>
-        <div class="account-info-item">
-          <span class="account-info-label">Base16:</span>
-          <span class="account-info-value" id="account-base16">-</span>
-        </div>
-        <div class="account-info-item">
-          <span class="account-info-label">Bech32:</span>
-          <span class="account-info-value" id="account-bech32">-</span>
-        </div>
-        <div class="account-info-item">
-          <span class="account-info-label">Network:</span>
-          <span class="account-info-value" id="account-network">-</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="output-section">
-        <div class="output-title">📋 Output Log</div>
-        <pre id="output">Waiting for initialization...</pre>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="output-section">
-        <div class="output-title">🔍 ZilPay State</div>
-        <pre id="zilpay-state">Not initialized</pre>
-      </div>
-    </div>
+    <pre id="output"></pre>
+    <pre id="zilpay-state"></pre>
+    <pre id="blockchain-info"></pre>
+    <pre id="errors"></pre>
   </div>
-
   <script>
     const output = document.getElementById('output');
     const zilpayState = document.getElementById('zilpay-state');
-    const statusBadge = document.getElementById('status-badge');
-    const successBox = document.getElementById('success-box');
-    const errorBox = document.getElementById('error-box');
-    const accountInfo = document.getElementById('account-info');
+    const errors = document.getElementById('errors');
+    const blockchainInfo = document.getElementById('blockchain-info');
+    const maxAttempts = 5;
+    let attempts = 0;
 
-    let checkAttempts = 0;
-    const maxAttempts = 50; // 5 seconds
+    window.onload = function () {
+      output.textContent = 'Page loaded, starting zilPay injection attempts...\n';
+      tryInjectZilPay();
+    };
 
-    function log(message, type = 'info') {
-      const timestamp = new Date().toLocaleTimeString();
-      const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
-      output.textContent = `[${timestamp}] ${prefix} ${message}\n` + output.textContent;
+    function tryInjectZilPay() {
+      attempts++;
+      if (attempts > maxAttempts) {
+        output.textContent += `Failed to inject zilPay after ${maxAttempts} attempts\n`;
+        showError('Injection failed after maximum attempts');
+        return;
+      }
+      output.textContent += `Attempt ${attempts} of ${maxAttempts}...\n`;
+      try {
+        injectZilPay();
+      } catch (err) {
+        showError(`Injection attempt ${attempts} failed: ${err.message}`);
+        setTimeout(tryInjectZilPay, 1000);
+      }
     }
 
-    function showSuccess(message) {
-      successBox.textContent = '✅ ' + message;
-      successBox.style.display = 'block';
-      setTimeout(() => {
-        successBox.style.display = 'none';
-      }, 5000);
-    }
-
-    function showError(message) {
-      errorBox.textContent = '❌ ' + message;
-      errorBox.style.display = 'block';
-      log(message, 'error');
-    }
-
-    function updateStatus(status, text) {
-      statusBadge.className = `status-badge ${status}`;
-      statusBadge.innerHTML = text;
-    }
-
-    function enableButtons(enabled) {
-      const buttons = ['wallet-data-btn', 'sign-msg-btn', 'sign-tx-btn', 'blockchain-btn', 'disconnect-btn'];
-      buttons.forEach(id => {
-        document.getElementById(id).disabled = !enabled;
-      });
+    function injectZilPay() {
+      if (window.zilPay) {
+        output.textContent += 'zilPay already exists\n';
+        updateZilPayState();
+        return;
+      }
+      updateZilPayState();
     }
 
     function updateZilPayState() {
+      const state = {
+        isConnect: window.zilPay?.wallet.isConnect,
+        isEnable: window.zilPay?.wallet.isEnable,
+        defaultAccount: window.zilPay?.wallet.defaultAccount,
+        version: window.zilPay?.version
+      };
+      zilpayState.textContent = 'zilPay State:\n' + JSON.stringify(state, null, 2);
+    }
+
+    function showError(message) {
+      errors.style.display = 'block';
+      errors.textContent += `${new Date().toLocaleTimeString()} - ${message}\n`;
+    }
+
+    function connectWallet() {
+      if (!window.zilPay || !window.zilPay.wallet) { showError('zilPay not initialized'); return; }
       try {
-        const state = {
-          exists: !!window.zilPay,
-          wallet: {
-            isConnect: window.zilPay?.wallet?.isConnect || false,
-            isEnable: window.zilPay?.wallet?.isEnable || false,
-            defaultAccount: window.zilPay?.wallet?.defaultAccount || null,
-            net: window.zilPay?.wallet?.net || null
-          }
-        };
-        zilpayState.textContent = JSON.stringify(state, null, 2);
-
-        if (window.zilPay?.wallet?.isConnect && window.zilPay?.wallet?.defaultAccount) {
-          document.getElementById('account-base16').textContent = 
-            window.zilPay.wallet.defaultAccount.base16 || '-';
-          document.getElementById('account-bech32').textContent = 
-            window.zilPay.wallet.defaultAccount.bech32 || '-';
-          document.getElementById('account-network').textContent = 
-            window.zilPay.wallet.net || '-';
-          accountInfo.style.display = 'block';
-        } else {
-          accountInfo.style.display = 'none';
-        }
-      } catch (err) {
-        zilpayState.textContent = `Error: ${err.message}`;
-      }
+        window.zilPay.wallet.connect().then((connected) => { output.textContent = `Connected: ${connected}\nAccount: ${JSON.stringify(window.zilPay.wallet.defaultAccount, null, 2)}`; updateZilPayState(); }).catch((err) => { showError(`Connect Wallet failed: ${err.message}`); });
+      } catch (err) { showError(`Connect Wallet error: ${err.message}`); }
     }
 
-    function checkZilPayInjection() {
-      checkAttempts++;
-      
-      if (window.zilPay) {
-        log('ZilPay detected successfully!', 'success');
-        updateStatus('connected', '🟢 ZilPay Ready');
-        updateZilPayState();
-        enableButtons(false);
-        document.getElementById('connect-btn').disabled = false;
-        return;
-      }
-
-      if (checkAttempts >= maxAttempts) {
-        log('ZilPay not found after maximum attempts', 'error');
-        updateStatus('disconnected', '🔴 ZilPay Not Found');
-        showError('ZilPay extension not detected. Please install the extension and refresh the page.');
-        return;
-      }
-
-      log(`Checking for ZilPay... (Attempt ${checkAttempts}/${maxAttempts})`);
-      setTimeout(checkZilPayInjection, 100);
-    }
-
-    async function connectWallet() {
-      if (!window.zilPay || !window.zilPay.wallet) {
-        showError('ZilPay not initialized');
-        return;
-      }
-
+    function signMessage() {
+      if (!window.zilPay || !window.zilPay.wallet) { showError('zilPay not initialized'); return; }
       try {
-        log('Requesting wallet connection...');
-        updateStatus('loading', '🟡 Connecting...');
-        
-        const connected = await window.zilPay.wallet.connect();
-        
-        if (connected) {
-          log('Wallet connected successfully!', 'success');
-          updateStatus('connected', '🟢 Connected');
-          showSuccess('Wallet connected successfully!');
-          enableButtons(true);
-          updateZilPayState();
-        } else {
-          log('Connection rejected by user', 'error');
-          updateStatus('disconnected', '🔴 Connection Rejected');
-          showError('Connection was rejected');
-        }
-      } catch (err) {
-        log(`Connection error: ${err.message}`, 'error');
-        updateStatus('disconnected', '🔴 Connection Failed');
-        showError(`Connection failed: ${err.message}`);
-      }
+        window.zilPay.wallet.sign('Hello, Zilliqa!').then((signed) => { output.textContent = `Signed Message: ${JSON.stringify(signed, null, 2)}`; }).catch((err) => { showError(`Sign Message failed: ${err.message}`); });
+      } catch (err) { showError(`Sign Message error: ${err.message}`); }
     }
 
-    async function getWalletData() {
-      if (!window.zilPay?.wallet) {
-        showError('ZilPay not initialized');
-        return;
-      }
-
+    function signTransaction() {
+      if (!window.zilPay || !window.zilPay.wallet) { showError('zilPay not initialized'); return; }
       try {
-        log('Fetching wallet data...');
-        
-        const data = {
-          isConnect: window.zilPay.wallet.isConnect,
-          isEnable: window.zilPay.wallet.isEnable,
-          defaultAccount: window.zilPay.wallet.defaultAccount,
-          net: window.zilPay.wallet.net,
-          http: window.zilPay.wallet.http
-        };
-
-        log('Wallet data retrieved successfully', 'success');
-        showSuccess('Wallet data retrieved!');
-        output.textContent = `Wallet Data:\n${JSON.stringify(data, null, 2)}\n\n` + output.textContent;
-        updateZilPayState();
-      } catch (err) {
-        showError(`Get wallet data failed: ${err.message}`);
-      }
+        const tx = { toAddr: 'zil1z5l...test', amount: '1000000', gasPrice: '2000', gasLimit: '50', nonce: 1, pubKey: '0xpublickey123' };
+        window.zilPay.wallet.sign(tx).then((signedTx) => { output.textContent = `Signed Transaction: ${JSON.stringify(signedTx, null, 2)}`; }).catch((err) => { showError(`Sign Transaction failed: ${err.message}`); });
+      } catch (err) { showError(`Sign Transaction error: ${err.message}`); }
     }
 
-    async function signMessage() {
-      if (!window.zilPay?.wallet) {
-        showError('ZilPay not initialized');
-        return;
-      }
-
+    function getBlockchainInfo() {
+      if (!window.zilPay || !window.zilPay.blockchain) { showError('zilPay blockchain not initialized'); return; }
       try {
-        log('Requesting message signature...');
-        const message = 'Hello from ZilPay Web3! This is a test message.';
-        
-        const signed = await window.zilPay.wallet.sign(message);
-        
-        log('Message signed successfully!', 'success');
-        showSuccess('Message signed!');
-        output.textContent = `Signed Message:\n${JSON.stringify(signed, null, 2)}\n\n` + output.textContent;
-      } catch (err) {
-        showError(`Sign message failed: ${err.message}`);
-      }
-    }
-
-    async function signTransaction() {
-      if (!window.zilPay?.blockchain) {
-        showError('ZilPay blockchain not initialized');
-        return;
-      }
-
-      try {
-        log('Creating transaction...');
-        
-        const tx = await window.zilPay.blockchain.createTransaction({
-          toAddr: 'zil1zg69v7ys90z4u7gpy93ulzxrgep4v7y5dvgfql',
-          amount: '1000000000000', // 1 ZIL
-          gasPrice: '2000000000',
-          gasLimit: '50'
-        });
-        
-        log('Transaction created and signed!', 'success');
-        showSuccess('Transaction signed!');
-        output.textContent = `Transaction:\n${JSON.stringify(tx, null, 2)}\n\n` + output.textContent;
-      } catch (err) {
-        showError(`Sign transaction failed: ${err.message}`);
-      }
-    }
-
-    async function getBlockchainInfo() {
-      if (!window.zilPay?.blockchain) {
-        showError('ZilPay blockchain not initialized');
-        return;
-      }
-
-      try {
-        log('Fetching blockchain info...');
-        
-        const info = await window.zilPay.blockchain.getBlockChainInfo();
-        
-        log('Blockchain info retrieved!', 'success');
-        showSuccess('Blockchain info retrieved!');
-        output.textContent = `Blockchain Info:\n${JSON.stringify(info, null, 2)}\n\n` + output.textContent;
-      } catch (err) {
-        showError(`Get blockchain info failed: ${err.message}`);
-      }
-    }
-
-    async function disconnect() {
-      if (!window.zilPay?.wallet) {
-        showError('ZilPay not initialized');
-        return;
-      }
-
-      try {
-        log('Disconnecting wallet...');
-        
-        await window.zilPay.wallet.disconnect();
-        
-        log('Wallet disconnected', 'success');
-        updateStatus('disconnected', '🔴 Disconnected');
-        showSuccess('Wallet disconnected!');
-        enableButtons(false);
-        document.getElementById('connect-btn').disabled = false;
-        accountInfo.style.display = 'none';
-        updateZilPayState();
-      } catch (err) {
-        showError(`Disconnect failed: ${err.message}`);
-      }
-    }
-
-    // Listen for account changes
-    window.addEventListener('message', (event) => {
-      if (event.source !== window) return;
-      
-      const data = event.data;
-      if (data && data.type && data.type.includes('address-changed')) {
-        log('Account changed detected', 'success');
-        updateZilPayState();
-      }
-      
-      if (data && data.type && data.type.includes('network-changed')) {
-        log('Network changed detected', 'success');
-        updateZilPayState();
-      }
-    });
-
-    // Start checking for ZilPay on page load
-    window.addEventListener('load', () => {
-      log('Page loaded, checking for ZilPay...');
-      checkZilPayInjection();
-    });
-
-    // Also check immediately in case DOMContentLoaded already fired
-    if (document.readyState === 'complete') {
-      log('Document ready, checking for ZilPay...');
-      checkZilPayInjection();
+        window.zilPay.blockchain.getBlockChainInfo().then((info) => { blockchainInfo.textContent = `Blockchain Info:\n${JSON.stringify(info, null, 2)}`; }).catch((err) => { showError(`Get Blockchain Info failed: ${err.message}`); });
+      } catch (err) { showError(`Get Blockchain Info error: ${err.message}`); }
     }
   </script>
 </body>
