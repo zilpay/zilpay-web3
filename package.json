@@ -1,6 +1,6 @@
 {
-  "name": "@zilpay/zilpay-web3",
-  "version": "0.0.1",
+  "name": "@hicaru/zilpay-web3",
+  "version": "0.0.2",
   "repository": "git@github.com:zilpay/zilpay-web3.git",
   "author": "Rinat <lich666black@gmail.com>",
   "type": "module",
